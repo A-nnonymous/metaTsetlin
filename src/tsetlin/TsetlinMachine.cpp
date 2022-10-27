@@ -95,26 +95,30 @@ TsetlinMachine::responseIntegrityCheck(const vector<vector<int>> response)
     bool result = (!isZeroSize) && (isCorrectLength); 
     if (!result)
     {
-        std::cout<<"Result failed integrity check."<<std::endl;
+        std::cout<<"Response failed integrity check."<<std::endl;
     }
     return result;
 }
 
-/// @brief Load data and train this Tsetlin machine.
+/// @brief Perform data integrity check and load into shared vector.
 /// @param data 2D vector shaped in ( sampleNum * _inputSize )
 /// @param response 2D vector shaped in ( sampleNum * _outputSize )
-/// @param epoch Max count of repeat training time.
 void
-TsetlinMachine::loadAndTrain(   vector<vector<int>> data,
-                                vector<vector<int>> response,
-                                int epoch)
+TsetlinMachine::load(vector<vector<int>> data,
+                                vector<vector<int>> response)
 {
     if( !dataIntegrityCheck(data) || 
-        !responseIntegrityCheck(response)) throw;
+        !responseIntegrityCheck(response)) {throw;return;}
     
     _sharedData = data;
     _response = response;
+}
 
+/// @brief Train this Tsetlin machine using loaded data.
+/// @param epoch Max count of repeat training time.
+void
+TsetlinMachine::train(int epoch)
+{
     for (int i = 0; i < epoch; i++)
     {
         for (int j = 0; j < _outputSize; j++)   // Each output corresponds an automata.

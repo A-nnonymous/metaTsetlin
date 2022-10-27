@@ -1,3 +1,4 @@
+#pragma once
 #include "Automata.h"
 using std::vector;
 
@@ -52,8 +53,8 @@ public:
 
     void                importModel(model targetModel);
     model               exportModel();
-    void                loadAndTrain(   vector<vector<int>> data,
-                                        vector<vector<int>> response,
-                                        int epoch);
+    void                load(   vector<vector<int>> data,
+                                vector<vector<int>> response);
+    void                train(int epoch);
     vector<vector<int>> loadAndPredict( vector<vector<int>> data);
 };

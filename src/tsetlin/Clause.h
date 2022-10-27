@@ -39,7 +39,7 @@ private:
     int                 _vote;
     bool                _isVoteDirty;
 
-    bool modelIntegrityCheck(model targetModel);
+    inline bool modelIntegrityCheck(model targetModel);
 
 public:
     Clause(ClauseArgs args);

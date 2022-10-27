@@ -29,6 +29,8 @@ _targets(target) // Target vector is arranged to 2D vector, each row is an refle
         _negativeClauses.push_back(std::move(negClause));
     }
 }
+
+
 bool Automata::modelIntegrityCheck(model targetModel)
 {
     bool isRightLength =    (targetModel.negativeClauses.size() == _clauseNum) &&
@@ -36,6 +38,7 @@ bool Automata::modelIntegrityCheck(model targetModel)
     bool isRightPlace = (targetModel.no == _no);
     return isRightLength && isRightPlace;
 }
+
 void Automata::importModel(model targetModel)
 {
     if(!modelIntegrityCheck(targetModel))
@@ -49,7 +52,6 @@ void Automata::importModel(model targetModel)
         _negativeClauses[i].importModel(targetModel.negativeClauses[i]);
     }
 }
-
 Automata::model Automata::exportModel()
 {
     Automata::model result;
@@ -61,8 +63,9 @@ Automata::model Automata::exportModel()
         result.positiveClauses[i] = _positiveClauses[i].exportModel();
         result.negativeClauses[i] = _negativeClauses[i].exportModel();
     }
-    
+    return result;
 }
+
 
 int Automata::forward(vector<int> &datavec)
 {
@@ -81,6 +84,7 @@ int Automata::forward(vector<int> &datavec)
     }
     return sum;
 }
+
 
 void Automata::backward(int response)
 {
