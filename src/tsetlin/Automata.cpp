@@ -1,7 +1,7 @@
 #include "Automata.h"
 
 
-Automata::Automata(AutomataArgs args, vector<vector<int>> &input, vector<int> &target):
+Automata::Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target):
 _no(args.no),
 _clauseNum(args.clauseNum),
 _T(args.T),
@@ -41,7 +41,7 @@ bool Automata::modelIntegrityCheck(model targetModel)
     bool isRightPlace = (targetModel.no == _no);
     return isRightLength && isRightPlace;
 }
-
+/*
 /// @brief Check and import Automata model
 /// @param targetModel Model depacked and passed from its caller.
 void Automata::importModel(model targetModel)
@@ -73,13 +73,14 @@ Automata::model Automata::exportModel()
     }
     return result;
 }
-
+*/
 
 /// @brief Forward function, doing vote for learning or predicting.
 /// @param datavec A single vector of input data containing _inputSize number of elements.
 /// @return Result of all clauses' vote.
-int Automata::forward(vector<int> &datavec)
+int Automata::forward(vector<__m512i> &datavec)
 {
+    //std::cout<< "Start forwarding, each sample consume "<< datavec.size()<<std::endl;
     int sum = 0;
     for(auto    pos = _positiveClauses.begin();
                 pos < _positiveClauses.end();
@@ -139,6 +140,7 @@ void Automata::backward(int response)
 /// @brief Learning process including forward and backward of a single epoch.
 void Automata::learn()
 {
+    //std::cout<< "Start learning, each sample consume "<< _sharedInputData[0].size()<<std::endl;
     for (int i = 0; i < _sharedInputData.size(); i++)
     {
         forward(_sharedInputData[i]);
@@ -150,7 +152,7 @@ void Automata::learn()
 /// @param input Given input 2D vector, shaped in ( sampleNum * _inputSize )
 /// @return Vector of prediction structs, containing result of each example and it's predict confidence.
 vector<Automata::Prediction>
-Automata::predict (vector<vector<int>> &input)
+Automata::predict (vector<vector<__m512i>> &input)
 {
     vector<Prediction> result(input.size(),Prediction());
     for (int i = 0; i < input.size(); i++)

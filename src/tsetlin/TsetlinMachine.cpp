@@ -95,6 +95,23 @@ TsetlinMachine::transpose(vector<vector<int>> original)
     }
     return result;    
 }
+
+/// @brief Pack and 'align' the original vector of int to 512Byte pack with zero-padding if size not equal to 16-mer.
+/// @param original Original vector of 32bit integer.
+/// @return Vector of packed and zero-padded __m512i pack vector.
+vector<__m512i>
+TsetlinMachine::pack(vector<int> original)
+{
+    int packNum = original.size()/16 + (original.size()%16==0? 0:1);
+    vector<__m512i> result(packNum, _mm512_set1_epi32(0));
+    for (int i = 0; i < packNum; i++)
+    {
+        result[i] = _mm512_loadu_epi32(&original[i*16]);
+    }
+    return result;
+}
+
+/*
 /// @brief Import model from user.
 /// @param targetModel Target model in class of TsetlinMachine::model.
 void
@@ -126,6 +143,7 @@ TsetlinMachine::exportModel()
     }
     return result;
 }
+*/
 
 /// @brief Perform data integrity check and load into shared vector.
 /// @param data 2D vector shaped in ( sampleNum * _inputSize )
@@ -137,11 +155,18 @@ TsetlinMachine::load(vector<vector<int>> data,
     vector<vector<int>> temp = transpose(response);
     if( !dataIntegrityCheck(data) || 
         !responseIntegrityCheck(temp)) {throw;return;}
-    _sharedData = data;
+    _sharedData.resize( data.size(),
+                        vector<__m512i>(1, _mm512_set1_epi32(0)));
     for (int i = 0; i < _outputSize; i++)
     {
         _response[i] = temp[i];
     }
+
+    for (int i = 0; i < data.size(); i++)
+    {
+        _sharedData[i] = pack(data[i]);
+    }
+    std::cout<<"Loaded "<<data.size()<< " samples, each consumes "<<_sharedData[0].size()<< " blocks"<<std::endl;
 }
 
 /// @brief Train this Tsetlin machine using loaded data.
@@ -167,10 +192,17 @@ TsetlinMachine::loadAndPredict(vector<vector<int>> data)
     if( !dataIntegrityCheck(data)) throw;
     vector<vector<Automata::Prediction>> prediction(_outputSize,
                                                     vector<Automata::Prediction>(data.size(),Automata::Prediction()));
-    _sharedData = data;
+    vector<vector<__m512i>> mdata;
+    mdata.resize( data.size(),
+                        vector<__m512i>(1, _mm512_set1_epi32(0)));
     for (int i = 0; i < _outputSize; i++)
     {
-        prediction[i] = _automatas[i].predict(data);
+        mdata[i] = pack(data[i]);
+    }
+
+    for (int i = 0; i < _outputSize; i++)
+    {
+        prediction[i] = _automatas[i].predict(mdata);
     }
     vector<vector<int>> result(data.size(), vector<int>(_outputSize,0));
     for (int sampleIdx = 0; sampleIdx < data.size(); sampleIdx++)

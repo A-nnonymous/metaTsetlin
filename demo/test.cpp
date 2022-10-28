@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
     int                             test_data_size = 139;
     int                             output_size = 4;
     int                             input_size = 84;
-    int                             clausePerOutput = 500;      // Only represent the number of clauses that have same polarity.
+    int                             clausePerOutput = 1000;      // Only represent the number of clauses that have same polarity.
     double                          dropoutRatio = 0.0;
 
     vector<vector<int>>   train_seqs(train_data_size, vector<int>(input_size, 0));

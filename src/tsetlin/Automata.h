@@ -39,7 +39,7 @@ private:
     const double                _sLow;
     const double                _sHigh;             // This is for multigranular clauses.
     const double                _dropoutRatio;      // Random dropout some clauses.
-    vector<vector<int>>         &_sharedInputData;  // When start traning, reference dataset from TM.
+    vector<vector<__m512i>>     &_sharedInputData;  // When start traning, reference dataset from TM.
     vector<int>                 &_targets;
 
     std::mt19937                _rng;               // Shared random number generator using Mersenne twister.
@@ -47,14 +47,14 @@ private:
     vector<Clause>              _positiveClauses;
     vector<Clause>              _negativeClauses;
 
-    int     forward(vector<int> &datavec);
+    int     forward(vector<__m512i> &datavec);
     void    backward(int response);
     bool    modelIntegrityCheck(model targetModel);
 public:
-    Automata(AutomataArgs args, vector<vector<int>> &input, vector<int> &target);
+    Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target);
 
-    void                importModel(model targetModel);
-    model               exportModel();
     void                learn();
-    vector<Prediction>  predict(vector<vector<int>> &input);
+    vector<Prediction>  predict(vector<vector<__m512i>> &input);
+    //void                importModel(model targetModel);
+    //model               exportModel();
 };
