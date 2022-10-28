@@ -1,5 +1,6 @@
 #include "TsetlinMachine.h"
 
+
 TsetlinMachine::TsetlinMachine( MachineArgs args):
 _inputSize(args.inputSize),
 _outputSize(args.outputSize),
@@ -27,38 +28,14 @@ _myArgs(args)
     
 }
 
+/// @brief Check model integrity before importing
+/// @param targetModel Model that user intend to import
+/// @return Boolean value of the integrity
 bool
 TsetlinMachine::modelIntegrityCheck(model targetModel)
 {
     bool isRightArgument =  (targetModel.modelArgs == _myArgs);
     return isRightArgument;
-}
-
-void
-TsetlinMachine::importModel(model targetModel)
-{
-    if(!modelIntegrityCheck(targetModel))
-    {
-        std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
-        throw; return;
-    }
-    for (int i = 0; i < _outputSize; i++)
-    {
-        _automatas[i].importModel(targetModel.automatas[i]);
-    }
-}
-
-TsetlinMachine::model
-TsetlinMachine::exportModel()
-{
-    TsetlinMachine::model result;
-    result.modelArgs = _myArgs;
-    result.automatas.resize(_outputSize,Automata::model());
-    for (int i = 0; i < _outputSize; i++)
-    {
-        result.automatas[i] = _automatas[i].exportModel();
-    }
-    return result;
 }
 
 /// @brief Check the integrity of argument 'data'.
@@ -100,6 +77,56 @@ TsetlinMachine::responseIntegrityCheck(const vector<vector<int>> response)
     return result;
 }
 
+/// @brief Transpose response matrix before store in shared vector.
+/// @param original Original 2D vector of response, shaped in ( sampleNum * _outputSize )
+/// @return Transposed 2D vector of response , shaped in ( _outputSize * sampleNum )
+vector<vector<int>> 
+TsetlinMachine::transpose(vector<vector<int>> original)
+{
+    int rowNum = original.size();
+    int colNum = original[0].size();
+    vector<vector<int>> result(colNum, vector<int>(rowNum,0));
+    for (int row = 0; row < rowNum; row++)
+    {
+        for (int col = 0; col < colNum; col++)
+        {
+            result[col][row] = original[row][col];
+        }
+    }
+    return result;    
+}
+/// @brief Import model from user.
+/// @param targetModel Target model in class of TsetlinMachine::model.
+void
+TsetlinMachine::importModel(model targetModel)
+{
+    if(!modelIntegrityCheck(targetModel))
+    {
+        std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
+        throw; return;
+    }
+    for (int i = 0; i < _outputSize; i++)
+    {
+        _automatas[i].importModel(targetModel.automatas[i]);
+    }
+}
+
+
+/// @brief Export current model.
+/// @return Current model and arguments.
+TsetlinMachine::model
+TsetlinMachine::exportModel()
+{
+    TsetlinMachine::model result;
+    result.modelArgs = _myArgs;
+    result.automatas.resize(_outputSize,Automata::model());
+    for (int i = 0; i < _outputSize; i++)
+    {
+        result.automatas[i] = _automatas[i].exportModel();
+    }
+    return result;
+}
+
 /// @brief Perform data integrity check and load into shared vector.
 /// @param data 2D vector shaped in ( sampleNum * _inputSize )
 /// @param response 2D vector shaped in ( sampleNum * _outputSize )
@@ -107,11 +134,14 @@ void
 TsetlinMachine::load(vector<vector<int>> data,
                                 vector<vector<int>> response)
 {
+    vector<vector<int>> temp = transpose(response);
     if( !dataIntegrityCheck(data) || 
-        !responseIntegrityCheck(response)) {throw;return;}
-    
+        !responseIntegrityCheck(temp)) {throw;return;}
     _sharedData = data;
-    _response = response;
+    for (int i = 0; i < _outputSize; i++)
+    {
+        _response[i] = temp[i];
+    }
 }
 
 /// @brief Train this Tsetlin machine using loaded data.

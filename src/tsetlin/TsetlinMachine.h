@@ -44,15 +44,18 @@ private:
     vector<vector<int>>     _sharedData;
     vector<vector<int>>     _response;      // Each row is a reflection of multi-dimensional dataset.
 
+    bool    modelIntegrityCheck(model targetModel);
     bool    dataIntegrityCheck( const vector<vector<int>> data);
     bool    responseIntegrityCheck(const vector<vector<int>> response);
-    bool    modelIntegrityCheck(model targetModel);
+
+    vector<vector<int>> transpose(vector<vector<int>> original);
 
 public:
     TsetlinMachine( MachineArgs args);
 
     void                importModel(model targetModel);
     model               exportModel();
+
     void                load(   vector<vector<int>> data,
                                 vector<vector<int>> response);
     void                train(int epoch);

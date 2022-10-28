@@ -17,6 +17,9 @@ _s(args.specificity), _sInv(1.0/_s), _sInvConj(1.0-_sInv)
     _inputMask.resize(_literalNum,false);
 }
 
+/// @brief Check model integrity before importing
+/// @param targetModel Model that user intend to import
+/// @return Boolean value of the integrity
 bool Clause::modelIntegrityCheck(model targetModel)
 {
     bool isRightLength =    (targetModel.positiveLiteral.size() == _literalNum) &&
@@ -25,6 +28,8 @@ bool Clause::modelIntegrityCheck(model targetModel)
     return isRightLength && isRightPlace;
 }
 
+/// @brief Import clause state vectors from outside.
+/// @param targetModel State vector unpackaged by Automata.
 void Clause::importModel(model targetModel)
 {
     if(!modelIntegrityCheck(targetModel))
@@ -36,6 +41,8 @@ void Clause::importModel(model targetModel)
     _negativeLiterals = targetModel.negativeLiteral;
 }
 
+/// @brief Pack and export clause state vectors to outside.
+/// @return Current clause state vectors.
 Clause::model Clause::exportModel()
 {
     Clause::model result;

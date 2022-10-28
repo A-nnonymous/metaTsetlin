@@ -31,6 +31,9 @@ _targets(target) // Target vector is arranged to 2D vector, each row is an refle
 }
 
 
+/// @brief Check the integrety of target model.
+/// @param targetModel Input model.
+/// @return Result of this check.
 bool Automata::modelIntegrityCheck(model targetModel)
 {
     bool isRightLength =    (targetModel.negativeClauses.size() == _clauseNum) &&
@@ -39,6 +42,8 @@ bool Automata::modelIntegrityCheck(model targetModel)
     return isRightLength && isRightPlace;
 }
 
+/// @brief Check and import Automata model
+/// @param targetModel Model depacked and passed from its caller.
 void Automata::importModel(model targetModel)
 {
     if(!modelIntegrityCheck(targetModel))
@@ -52,6 +57,9 @@ void Automata::importModel(model targetModel)
         _negativeClauses[i].importModel(targetModel.negativeClauses[i]);
     }
 }
+
+/// @brief Calling every clause to export their automatons' state and pack them to the caller.
+/// @return Packed struct of Automata model.
 Automata::model Automata::exportModel()
 {
     Automata::model result;
@@ -67,6 +75,9 @@ Automata::model Automata::exportModel()
 }
 
 
+/// @brief Forward function, doing vote for learning or predicting.
+/// @param datavec A single vector of input data containing _inputSize number of elements.
+/// @return Result of all clauses' vote.
 int Automata::forward(vector<int> &datavec)
 {
     int sum = 0;
@@ -86,6 +97,8 @@ int Automata::forward(vector<int> &datavec)
 }
 
 
+/// @brief Backward function, containing arrangement of two types of feedback.
+/// @param response Target response of this input vector.
 void Automata::backward(int response)
 {
     int     clampedSum = std::min(_T, std::max(-_T, response));
@@ -123,6 +136,7 @@ void Automata::backward(int response)
 }
 
 
+/// @brief Learning process including forward and backward of a single epoch.
 void Automata::learn()
 {
     for (int i = 0; i < _sharedInputData.size(); i++)
@@ -132,6 +146,9 @@ void Automata::learn()
     }
 }
 
+/// @brief Generate output using learned clauses in this automata
+/// @param input Given input 2D vector, shaped in ( sampleNum * _inputSize )
+/// @return Vector of prediction structs, containing result of each example and it's predict confidence.
 vector<Automata::Prediction>
 Automata::predict (vector<vector<int>> &input)
 {

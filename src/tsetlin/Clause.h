@@ -39,7 +39,7 @@ private:
     int                 _vote;
     bool                _isVoteDirty;
 
-    inline bool modelIntegrityCheck(model targetModel);
+    bool modelIntegrityCheck(model targetModel);
 
 public:
     Clause(ClauseArgs args);
@@ -49,5 +49,4 @@ public:
     int     vote(vector<int> in);
     void    feedbackTypeI();
     void    feedbackTypeII();
-
 };

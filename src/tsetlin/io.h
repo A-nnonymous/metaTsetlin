@@ -22,24 +22,7 @@ void parse_huesken_scores(std::string path,
 
 bool write_csv_row(std::vector<float> data, std::ofstream *output);
 
-template<typename dtype>
-bool write_csv(dtype *data, int row, int column, std::string filepath)
-{ 
-    std::ofstream output;
-    output.open(filepath + ".csv", std::ios::out);
-    std::cout << "Output file stream opening success. " << std::endl;
-    for(int j = 0; j < row; j++)
-    {
-        for (int i = 0; i < column - 1; i++)
-        {
-            output << data[j * column + i] << ",";
-        }
-        output << data[j*column + column-1]<<"\n";
-    }
-    output.close();
-    return COMPLETED;
-    
-}
+
 
 void
 modelOutput (TsetlinMachine::model model,
