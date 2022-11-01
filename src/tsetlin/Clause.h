@@ -37,6 +37,7 @@ private:
     vector<__m512i>     _positiveLiteralBlocks;
     vector<__m512i>     _negativeLiteralBlocks;
     // May convert the inclusion mask and inputmask to __mmask16
+    __mmask16           _lastValidMask;         // Boundary problem
     vector<__mmask16>   _posInclusionMaskBlocks;
     vector<__mmask16>   _negInclusionMaskBlocks;
     vector<__mmask16>   _posExclusionMaskBlocks;

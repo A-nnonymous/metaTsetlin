@@ -103,6 +103,14 @@ _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
     _negExclusionMaskBlocks.resize(_blockNum, zeroMask);
     _inputMaskBlocks.resize(_blockNum, zeroMask);
     _inputMaskBlocksInverse.resize(_blockNum, zeroMask);
+
+    int remainder = _literalNum%16;         // Deal with boundary problem.
+    int lastMaskInt = 0;
+    for (int offset = 0; offset < remainder; offset++)
+    {
+        lastMaskInt += (1<<offset);
+    }
+    _lastValidMask = _mm512_int2mask(lastMaskInt);
 }
 
 
@@ -178,16 +186,9 @@ int Clause::vote(vector<__m512i> in)
         
         if(i == (_blockNum-1))    // Last block, may have boundary problem.
         {
-            int remainder = _literalNum%16;
-            int validIntMask = 0;
-            for (int offset = 0; offset < remainder; offset++)
-            {
-                validIntMask += (1<<offset);
-            }
-            __mmask16 validMask = _mm512_int2mask(validIntMask);
-            _posExclusionMaskBlocks[i] = _kand_mask16(_posExclusionMaskBlocks[i], validMask);
-            _negExclusionMaskBlocks[i] = _kand_mask16(_negExclusionMaskBlocks[i], validMask);
-            _inputMaskBlocksInverse[i] = _kand_mask16(_inputMaskBlocksInverse[i], validMask);
+            _posExclusionMaskBlocks[i] = _kand_mask16(_posExclusionMaskBlocks[i], _lastValidMask);
+            _negExclusionMaskBlocks[i] = _kand_mask16(_negExclusionMaskBlocks[i], _lastValidMask);
+            _inputMaskBlocksInverse[i] = _kand_mask16(_inputMaskBlocksInverse[i], _lastValidMask);
         }
     }
     /*
@@ -237,14 +238,12 @@ void Clause::feedbackTypeI()
     static std::mt19937                 rng(std::random_device{}());
     static vector<int>                  radical(_literalNum,0);
     static vector<int>                  conservative(_literalNum,0);
-    static vector<int>                  conservative2(_literalNum,0);
     static __m512i                      zeros = _mm512_set1_epi32(0);
     static __m512i                      ones = _mm512_set1_epi32(1);
     static __m512i                      negOnes= _mm512_set1_epi32(-1);
     static __mmask16                    zeroMask = _mm512_cmpeq_epi32_mask(ones,zeros);
     static vector<__m512i>              radicalBlock(_blockNum, zeros);
     static vector<__m512i>              conservativeBlock(_blockNum, zeros);
-    static vector<__m512i>              conservativeBlock2(_blockNum, zeros);
     static vector<__mmask16>            radicalPosMaskBlock(_blockNum, zeroMask);
     static vector<__mmask16>            conservativeNegMaskBlock(_blockNum, zeroMask);
     static vector<__mmask16>            conservativeNegMaskBlock2(_blockNum, zeroMask);
@@ -253,16 +252,18 @@ void Clause::feedbackTypeI()
     {
         radical[i] =        (d(rng)==1);   // Fill 'true' with possibility of _sInvConj
         conservative[i] =   (d(rng)==0);   // Complement possibility, but not correlated to radical[].
-        conservative2[i] =   (d(rng)==0);   // Complement possibility, but not correlated to radical[].
     }
     radicalBlock = pack(radical); conservativeBlock = pack(conservative);
-    conservativeBlock2 = pack(conservative2);
 
     for (int i = 0; i < _blockNum; i++)
     {
         radicalPosMaskBlock[i] = _mm512_cmpeq_epi32_mask(radicalBlock[i], ones);
         conservativeNegMaskBlock[i] = _mm512_cmpeq_epi32_mask(conservativeBlock[i], ones);
-        conservativeNegMaskBlock2[i] = _mm512_cmpeq_epi32_mask(conservativeBlock2[i], ones);
+        conservativeNegMaskBlock2[i] = _knot_mask16(radicalPosMaskBlock[i]);
+        if(i == (_blockNum-1))
+        {
+            conservativeNegMaskBlock2[i] = _kand_mask16(conservativeNegMaskBlock2[i], _lastValidMask);
+        }
     }
     /*
     ///////////////debug//////////////
