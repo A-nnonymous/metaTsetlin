@@ -33,8 +33,8 @@ int main() {
         { 0, 1 },
     };
     TsetlinMachine::MachineArgs mArgs;
-    mArgs.clausePerOutput = 2;
-    mArgs.dropoutRatio = 0;
+    mArgs.clausePerOutput = 10;
+    mArgs.dropoutRatio = 0.5;
     mArgs.inputSize = 2;
     mArgs.outputSize = 2;
     mArgs.sLow = 4.0f;
@@ -46,7 +46,7 @@ int main() {
     
     vector<vector<int>> prediction;
     clock_t start = clock();
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10000; i++)
     {
         tm.train(1);
     }
