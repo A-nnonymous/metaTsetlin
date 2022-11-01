@@ -34,7 +34,7 @@ int main() {
     };
     TsetlinMachine::MachineArgs mArgs;
     mArgs.clausePerOutput = 10;
-    mArgs.dropoutRatio = 0;
+    mArgs.dropoutRatio = 0.5;
     mArgs.inputSize = 2;
     mArgs.outputSize = 2;
     mArgs.sLow = 4.0f;
@@ -42,17 +42,17 @@ int main() {
     mArgs.T = 4;
     TsetlinMachine tm(mArgs);
     
-    tm.load(inputs, transpose(outputs));
+    tm.load(inputs, outputs);
     
     vector<vector<int>> prediction;
     clock_t start = clock();
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 10000; i++)
     {
         tm.train(1);
     }
     clock_t duration = clock() - start;
     std::cout<< duration/(double)CLOCKS_PER_SEC <<std::endl;
-    /*
+    
     prediction = tm.loadAndPredict(inputs);
     for (int i = 0; i < 4; i++)
     {
@@ -62,7 +62,7 @@ int main() {
         }
         std::cout<<std::endl;
     }
-    */
+    
     
 
     return 0;

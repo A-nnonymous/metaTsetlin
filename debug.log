@@ -1,0 +1,18 @@
+All process in this implement:
+
+object TsetlinMachine
+    object Automata
+        object Clause
+
+Initiate-[ ]
+    Initiate(with placeholder data reference)-[ ]
+        Initiate(with placeholder data reference)-[ ]
+
+load(2d,2d) -[ OK ]
+train(epoch)
+    learn()
+    :forward()-[ ]
+        vote()-[ OK ]
+        :sumAndPredict()-[ ]
+    :backward()
+        feedbackI/II()-[I ok, II OK ]
