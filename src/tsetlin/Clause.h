@@ -50,20 +50,10 @@ private:
     bool                modelIntegrityCheck(model targetModel);
     vector<int>         unpack(vector<__m512i> original);
     vector<__m512i>     pack(vector<int> original);
-    ///////////////////debug////////////////////////
-    void                maskProbe(vector<__mmask16> mask);
-    void                maskProbe(__mmask16 mask);
-    void                dataProbe(vector<__m512i> data);
-    void                dataProbe(__m512i data);
-    ///////////////////debug////////////////////////
 public:
     Clause(ClauseArgs args);
 
-    ////////////////////////////////////////
     int     vote(vector<__m512i> in);
     void    feedbackTypeI();
     void    feedbackTypeII();
-    // After vectorize, normal literal vector is not persistent any more, need add transform function to import and export.
-    //void    importModel(model targetModel);
-    //model   exportModel();
 };

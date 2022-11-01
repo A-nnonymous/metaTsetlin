@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
     int                             output_size = 4;
     int                             input_size = 84;
     int                             clausePerOutput = 500;      // Only represent the number of clauses that have same polarity.
-    double                          dropoutRatio = 0.3;
+    double                          dropoutRatio = 0.5;
 
     vector<vector<int>>   train_seqs(train_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
@@ -40,13 +40,13 @@ int main(int argc, char const *argv[])
     mArgs.dropoutRatio = dropoutRatio;
     mArgs.inputSize = input_size;
     mArgs.outputSize = output_size;
-    mArgs.sLow = 10.0f;
-    mArgs.sHigh = 20.0f;
-    mArgs.T = 400;
+    mArgs.sLow = 2.0f;
+    mArgs.sHigh = 100.0f;
+    mArgs.T = 928;
     TsetlinMachine tm(mArgs);
     
     tm.load(train_seqs,train_scores);
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
         auto start = std::chrono::high_resolution_clock::now();
         tm.train(1);
