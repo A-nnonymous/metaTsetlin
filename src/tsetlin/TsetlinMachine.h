@@ -50,6 +50,7 @@ private:
 
     vector<vector<int>> transpose(vector<vector<int>> original);
     vector<__m512i>     pack(vector<int> original);
+    void                dataProbe();
 public:
     TsetlinMachine( MachineArgs args);
 

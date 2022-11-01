@@ -3,6 +3,7 @@
 #include <chrono>
 #include <random>
 #include <immintrin.h>
+#include <assert.h>
 
 using std::vector;
 
@@ -44,9 +45,14 @@ private:
     bool                _isVoteDirty;
 
     bool                modelIntegrityCheck(model targetModel);
-    vector<__m512i>     pack(vector<int> original);
     vector<int>         unpack(vector<__m512i> original);
-
+    vector<__m512i>     pack(vector<int> original);
+    ///////////////////debug////////////////////////
+    void                maskProbe(vector<__mmask16> mask);
+    void                maskProbe(__mmask16 mask);
+    void                dataProbe(vector<__m512i> data);
+    void                dataProbe(__m512i data);
+    ///////////////////debug////////////////////////
 public:
     Clause(ClauseArgs args);
 

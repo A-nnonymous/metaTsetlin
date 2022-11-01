@@ -3,6 +3,7 @@
 
 Automata::Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target):
 _no(args.no),
+_inputSize(args.inputSize),
 _clauseNum(args.clauseNum),
 _T(args.T),
 _sLow(args.sLow),
@@ -31,16 +32,6 @@ _targets(target) // Target vector is arranged to 2D vector, each row is an refle
 }
 
 
-/// @brief Check the integrety of target model.
-/// @param targetModel Input model.
-/// @return Result of this check.
-bool Automata::modelIntegrityCheck(model targetModel)
-{
-    bool isRightLength =    (targetModel.negativeClauses.size() == _clauseNum) &&
-                            (targetModel.positiveClauses.size() == _clauseNum);
-    bool isRightPlace = (targetModel.no == _no);
-    return isRightLength && isRightPlace;
-}
 /*
 /// @brief Check and import Automata model
 /// @param targetModel Model depacked and passed from its caller.
@@ -136,6 +127,16 @@ void Automata::backward(int response)
     }
 }
 
+/// @brief Check the integrety of target model.
+/// @param targetModel Input model.
+/// @return Result of this check.
+bool Automata::modelIntegrityCheck(model targetModel)
+{
+    bool isRightLength =    (targetModel.negativeClauses.size() == _clauseNum) &&
+                            (targetModel.positiveClauses.size() == _clauseNum);
+    bool isRightPlace = (targetModel.no == _no);
+    return isRightLength && isRightPlace;
+}
 
 /// @brief Learning process including forward and backward of a single epoch.
 void Automata::learn()
@@ -161,6 +162,7 @@ Automata::predict (vector<vector<__m512i>> &input)
         int sum = forward(input[i]);
         thisPrediction.result = (sum>0? 1:0);
         thisPrediction.confidence = sum/(double)_clauseNum;
+        //std::cout<< "Automata "<<_no<<" prediction "<< i <<"is "<< thisPrediction.result<<" with confidence of: "<< thisPrediction.confidence<<std::endl;
         result[i] = thisPrediction;
     }
     return result;

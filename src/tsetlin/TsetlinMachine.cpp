@@ -28,6 +28,24 @@ _myArgs(args)
     
 }
 
+void
+TsetlinMachine::dataProbe()
+{
+    for (int i = 0; i < _sharedData.size(); i++)
+    {
+        vector<int> result(_sharedData[i].size()*16,0);
+        for (int j = 0; j < _sharedData[i].size(); j++)
+        {
+            _mm512_storeu_epi32(&result[j*16],_sharedData[i][j]);
+        }
+        std::cout<<"Row "<<i <<" data: ";
+        for (int k = 0; k < result.size(); k++)
+        {
+            std::cout<<result[k]<<"\t";
+        }
+        std::cout<<std::endl;
+    }
+}
 /// @brief Check model integrity before importing
 /// @param targetModel Model that user intend to import
 /// @return Boolean value of the integrity
@@ -103,10 +121,26 @@ vector<__m512i>
 TsetlinMachine::pack(vector<int> original)
 {
     int packNum = original.size()/16 + (original.size()%16==0? 0:1);
+    alignas(64) struct pack{
+        int data[16];
+        pack(){
+            for (int i = 0; i < 16; i++)
+            {
+                data[i] = 0;
+            }
+            
+        }
+    };
     vector<__m512i> result(packNum, _mm512_set1_epi32(0));
     for (int i = 0; i < packNum; i++)
     {
-        result[i] = _mm512_loadu_epi32(&original[i*16]);
+        pack thisPack;
+        for (int j = 0; j < 16; j++)
+        {
+            thisPack.data[j] = (i*16+j)<(original.size())? original[i*16+j] : 0;
+        }
+        
+        result[i] = _mm512_loadu_epi32(&thisPack);
     }
     return result;
 }
@@ -195,7 +229,7 @@ TsetlinMachine::loadAndPredict(vector<vector<int>> data)
     vector<vector<__m512i>> mdata;
     mdata.resize( data.size(),
                         vector<__m512i>(1, _mm512_set1_epi32(0)));
-    for (int i = 0; i < _outputSize; i++)
+    for (int i = 0; i < data.size(); i++)
     {
         mdata[i] = pack(data[i]);
     }
@@ -203,6 +237,7 @@ TsetlinMachine::loadAndPredict(vector<vector<int>> data)
     for (int i = 0; i < _outputSize; i++)
     {
         prediction[i] = _automatas[i].predict(mdata);
+        std::cout<<"Prediction "<< i<<" completed"<<std::endl;
     }
     vector<vector<int>> result(data.size(), vector<int>(_outputSize,0));
     for (int sampleIdx = 0; sampleIdx < data.size(); sampleIdx++)

@@ -24,8 +24,8 @@ int main(int argc, char const *argv[])
     int                             test_data_size = 139;
     int                             output_size = 4;
     int                             input_size = 84;
-    int                             clausePerOutput = 1000;      // Only represent the number of clauses that have same polarity.
-    double                          dropoutRatio = 0.0;
+    int                             clausePerOutput = 500;      // Only represent the number of clauses that have same polarity.
+    double                          dropoutRatio = 0.3;
 
     vector<vector<int>>   train_seqs(train_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
@@ -40,9 +40,9 @@ int main(int argc, char const *argv[])
     mArgs.dropoutRatio = dropoutRatio;
     mArgs.inputSize = input_size;
     mArgs.outputSize = output_size;
-    mArgs.sLow = 10.0f;
-    mArgs.sHigh = 20.0f;
-    mArgs.T = 400;
+    mArgs.sLow = 15.0f;
+    mArgs.sHigh = 25.0f;
+    mArgs.T = 600;
     TsetlinMachine tm(mArgs);
     
     tm.load(train_seqs,train_scores);
@@ -52,7 +52,7 @@ int main(int argc, char const *argv[])
         tm.train(1);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> diff = end - start;
-        std::cout << "Training"<<" consumes : " << diff.count() << " s\n";
+        std::cout <<"### Epoch"<<i<< " training"<<" consumes : " << diff.count() << " s\n";
     }
     
     vector<vector<int>> predict = tm.loadAndPredict(test_seqs);

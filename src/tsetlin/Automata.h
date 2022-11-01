@@ -34,6 +34,7 @@ public:
 
 private:
     const int                   _no;
+    const int                   _inputSize;
     const int                   _clauseNum;         // Attention, this is only represent one single polarity.
     const int                   _T;
     const double                _sLow;
@@ -50,6 +51,9 @@ private:
     int     forward(vector<__m512i> &datavec);
     void    backward(int response);
     bool    modelIntegrityCheck(model targetModel);
+    //////////////////////debug/////////////////////////
+    vector<int>         unpack(vector<__m512i> original);
+    //////////////////////debug/////////////////////////
 public:
     Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target);
 
