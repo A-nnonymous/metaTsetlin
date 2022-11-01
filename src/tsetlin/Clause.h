@@ -39,6 +39,8 @@ private:
     // May convert the inclusion mask and inputmask to __mmask16
     vector<__mmask16>   _posInclusionMaskBlocks;
     vector<__mmask16>   _negInclusionMaskBlocks;
+    vector<__mmask16>   _posExclusionMaskBlocks;
+    vector<__mmask16>   _negExclusionMaskBlocks;
     vector<__mmask16>   _inputMaskBlocks;
     vector<__mmask16>   _inputMaskBlocksInverse;
     int                 _vote;

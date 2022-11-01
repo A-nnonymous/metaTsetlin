@@ -46,14 +46,13 @@ int main() {
     
     vector<vector<int>> prediction;
     clock_t start = clock();
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
         tm.train(1);
     }
     clock_t duration = clock() - start;
     
     std::cout<< duration/(double)CLOCKS_PER_SEC <<std::endl;
-    /*
     prediction = tm.loadAndPredict(inputs);
     for (int i = 0; i < 4; i++)
     {
@@ -63,7 +62,6 @@ int main() {
         }
         std::cout<<std::endl;
     }
-    */
     
 
     return 0;
