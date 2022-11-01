@@ -194,6 +194,16 @@ int Clause::vote(vector<__m512i> in)
     //////////////////debug/////////////////////
     tag("Inputmask:");
     maskProbe(_inputMaskBlocks);
+    tag("InputmaskInverse:");
+    maskProbe(_inputMaskBlocksInverse);
+    tag("posInclusionMask");
+    maskProbe(_posInclusionMaskBlocks);
+    tag("posExclusionMask");
+    maskProbe(_posExclusionMaskBlocks);
+    tag("negInclusionMask");
+    maskProbe(_negInclusionMaskBlocks);
+    tag("negExclusionMask");
+    maskProbe(_negExclusionMaskBlocks);
     //////////////////debug/////////////////////
     */
     bool posNoProblem = true, negNoProblem= true;
@@ -246,6 +256,7 @@ void Clause::feedbackTypeI()
         conservative2[i] =   (d(rng)==0);   // Complement possibility, but not correlated to radical[].
     }
     radicalBlock = pack(radical); conservativeBlock = pack(conservative);
+    conservativeBlock2 = pack(conservative2);
 
     for (int i = 0; i < _blockNum; i++)
     {
@@ -260,10 +271,14 @@ void Clause::feedbackTypeI()
     dataProbe(radicalBlock);
     std::cout<<"Conservative judge array"<<std::endl;
     dataProbe(conservativeBlock);
+    std::cout<<"Conservative judge array2"<<std::endl;
+    dataProbe(conservativeBlock2);
     std::cout<<"radical judge mask"<<std::endl;
     maskProbe(radicalPosMaskBlock);
     std::cout<<"Conservative judge mask"<<std::endl;
     maskProbe(conservativeNegMaskBlock);
+    std::cout<<"Conservative judge mask2"<<std::endl;
+    maskProbe(conservativeNegMaskBlock2);
     }
     ///////////////debug//////////////
     */

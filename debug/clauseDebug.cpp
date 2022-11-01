@@ -41,8 +41,8 @@ int main()
     Clause::ClauseArgs cArgs;
     cArgs.no = 0;
     cArgs.isPositiveClause = true;
-    cArgs.inputSize = 2;
-    cArgs.specificity = 0.000001; // sinv -> 0 , sinvconj->1
+    cArgs.inputSize = 8;
+    cArgs.specificity = 2; 
     Clause debug(cArgs);
     
     int blockNum = cArgs.inputSize/16 + (cArgs.inputSize%16==0? 0:1);
@@ -55,6 +55,6 @@ int main()
     }
     int voteres = debug.vote(testblocks);
     std::cout<<"vote result: "<<voteres <<std::endl;
-    debug.feedbackTypeII();
+    debug.feedbackTypeI();
     return 0;
 }

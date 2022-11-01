@@ -40,9 +40,9 @@ int main(int argc, char const *argv[])
     mArgs.dropoutRatio = dropoutRatio;
     mArgs.inputSize = input_size;
     mArgs.outputSize = output_size;
-    mArgs.sLow = 15.0f;
-    mArgs.sHigh = 25.0f;
-    mArgs.T = 600;
+    mArgs.sLow = 10.0f;
+    mArgs.sHigh = 20.0f;
+    mArgs.T = 400;
     TsetlinMachine tm(mArgs);
     
     tm.load(train_seqs,train_scores);
