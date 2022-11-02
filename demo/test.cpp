@@ -31,10 +31,10 @@ int main(int argc, char const *argv[])
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
     vector<vector<int>>   test_seqs(test_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   test_scores(test_data_size, vector(output_size, 0));
-    parse_huesken_seqs("/home/data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
-    parse_huesken_scores("/home/data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
-    parse_huesken_seqs("/home/data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
-    parse_huesken_scores("/home/data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
+    parse_huesken_seqs("../data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
+    parse_huesken_scores("../data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
+    parse_huesken_seqs("../data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
+    parse_huesken_scores("../data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
     TsetlinMachine::MachineArgs mArgs;
     mArgs.clausePerOutput = clausePerOutput;
     mArgs.dropoutRatio = dropoutRatio;
