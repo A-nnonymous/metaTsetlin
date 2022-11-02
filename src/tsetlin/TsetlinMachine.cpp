@@ -1,6 +1,5 @@
 #include "TsetlinMachine.h"
-
-
+#include <thread>
 TsetlinMachine::TsetlinMachine( MachineArgs args):
 _inputSize(args.inputSize),
 _outputSize(args.outputSize),
@@ -28,29 +27,11 @@ _myArgs(args)
     
 }
 
-void
-TsetlinMachine::dataProbe()
-{
-    for (int i = 0; i < _sharedData.size(); i++)
-    {
-        vector<int> result(_sharedData[i].size()*16,0);
-        for (int j = 0; j < _sharedData[i].size(); j++)
-        {
-            _mm512_storeu_epi32(&result[j*16],_sharedData[i][j]);
-        }
-        std::cout<<"Row "<<i <<" data: ";
-        for (int k = 0; k < result.size(); k++)
-        {
-            std::cout<<result[k]<<"\t";
-        }
-        std::cout<<std::endl;
-    }
-}
 /// @brief Check model integrity before importing
 /// @param targetModel Model that user intend to import
 /// @return Boolean value of the integrity
 bool
-TsetlinMachine::modelIntegrityCheck(model targetModel)
+TsetlinMachine::modelIntegrityCheck(model &targetModel)
 {
     bool isRightArgument =  (targetModel.modelArgs == _myArgs);
     return isRightArgument;
@@ -60,7 +41,7 @@ TsetlinMachine::modelIntegrityCheck(model targetModel)
 /// @param response Input unknown size 2D vector.
 /// @return Result of integrity check procedure.
 bool
-TsetlinMachine::dataIntegrityCheck( const vector<vector<int>> data)
+TsetlinMachine::dataIntegrityCheck(const vector<vector<int>> &data)
 {
     bool isZeroSize = (data.size()==0);
     bool isCorrectLength = true;
@@ -82,7 +63,7 @@ TsetlinMachine::dataIntegrityCheck( const vector<vector<int>> data)
 /// @param response Input unknown size 2D vector.
 /// @return Result of integrity check procedure.
 bool
-TsetlinMachine::responseIntegrityCheck(const vector<vector<int>> response)
+TsetlinMachine::responseIntegrityCheck(const vector<vector<int>> &response)
 {
     bool isZeroSize = (response.size()==0);
     bool isCorrectLength = (response.size()==_outputSize);
@@ -99,7 +80,7 @@ TsetlinMachine::responseIntegrityCheck(const vector<vector<int>> response)
 /// @param original Original 2D vector of response, shaped in ( sampleNum * _outputSize )
 /// @return Transposed 2D vector of response , shaped in ( _outputSize * sampleNum )
 vector<vector<int>> 
-TsetlinMachine::transpose(vector<vector<int>> original)
+TsetlinMachine::transpose(vector<vector<int>> &original)
 {
     int rowNum = original.size();
     int colNum = original[0].size();
@@ -118,7 +99,7 @@ TsetlinMachine::transpose(vector<vector<int>> original)
 /// @param original Original vector of 32bit integer.
 /// @return Vector of packed and zero-padded __m512i pack vector.
 vector<__m512i>
-TsetlinMachine::pack(vector<int> original)
+TsetlinMachine::pack(vector<int> &original)
 {
     int packNum = original.size()/16 + (original.size()%16==0? 0:1);
     alignas(64) struct pack{
@@ -145,11 +126,10 @@ TsetlinMachine::pack(vector<int> original)
     return result;
 }
 
-/*
 /// @brief Import model from user.
 /// @param targetModel Target model in class of TsetlinMachine::model.
 void
-TsetlinMachine::importModel(model targetModel)
+TsetlinMachine::importModel(model &targetModel)
 {
     if(!modelIntegrityCheck(targetModel))
     {
@@ -173,18 +153,18 @@ TsetlinMachine::exportModel()
     result.automatas.resize(_outputSize,Automata::model());
     for (int i = 0; i < _outputSize; i++)
     {
+
         result.automatas[i] = _automatas[i].exportModel();
     }
     return result;
 }
-*/
 
 /// @brief Perform data integrity check and load into shared vector.
 /// @param data 2D vector shaped in ( sampleNum * _inputSize )
 /// @param response 2D vector shaped in ( sampleNum * _outputSize )
 void
-TsetlinMachine::load(vector<vector<int>> data,
-                                vector<vector<int>> response)
+TsetlinMachine::load(vector<vector<int>> &data,
+                                vector<vector<int>> &response)
 {
     vector<vector<int>> temp = transpose(response);
     if( !dataIntegrityCheck(data) || 
@@ -200,7 +180,7 @@ TsetlinMachine::load(vector<vector<int>> data,
     {
         _sharedData[i] = pack(data[i]);
     }
-    std::cout<<"Loaded "<<data.size()<< " samples, each consumes "<<_sharedData[0].size()<< " blocks"<<std::endl;
+    //std::cout<<"Loaded "<<data.size()<< " samples, each consumes "<<_sharedData[0].size()<< " blocks"<<std::endl;
 }
 
 /// @brief Train this Tsetlin machine using loaded data.
@@ -221,7 +201,7 @@ TsetlinMachine::train(int epoch)
 /// @param data 2D vector shaped in ( sampleNum * _inputSize )
 /// @return 2D vector shaped in ( sampleNum * _outputSize )
 vector<vector<int>>
-TsetlinMachine::loadAndPredict(vector<vector<int>> data)
+TsetlinMachine::loadAndPredict(vector<vector<int>> &data)
 {
     if( !dataIntegrityCheck(data)) throw;
     vector<vector<Automata::Prediction>> prediction(_outputSize,
@@ -237,7 +217,6 @@ TsetlinMachine::loadAndPredict(vector<vector<int>> data)
     for (int i = 0; i < _outputSize; i++)
     {
         prediction[i] = _automatas[i].predict(mdata);
-        std::cout<<"Prediction "<< i<<" completed"<<std::endl;
     }
     vector<vector<int>> result(data.size(), vector<int>(_outputSize,0));
     for (int sampleIdx = 0; sampleIdx < data.size(); sampleIdx++)

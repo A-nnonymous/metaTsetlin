@@ -49,11 +49,14 @@ private:
     vector<Clause>              _negativeClauses;
 
     int     forward(vector<__m512i> &datavec);
-    void    backward(int response);
+    void    backward(int &response);
     bool    modelIntegrityCheck(model targetModel);
 public:
     Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target);
 
     void                learn();
     vector<Prediction>  predict(vector<vector<__m512i>> &input);
+
+    model               exportModel();
+    void                importModel(model &targetModel);
 };

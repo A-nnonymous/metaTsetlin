@@ -4,27 +4,24 @@ using std::cout, std::endl;
 
 Clause::Clause(ClauseArgs args):
 _no(args.no),
-_isPositiveClause(args.isPositiveClause),
 _literalNum(args.inputSize),
 _s(args.specificity), _sInv(1.0/_s), _sInvConj(1.0-_sInv),
 _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
 {
-    static __m512i     ones = _mm512_set1_epi32(1);
-    static __m512i     zeros = _mm512_set1_epi32(0);
-    static __mmask16   zeroMask = _mm512_cmpeq_epi32_mask(ones,zeros);
-    static __mmask16   oneMask = _mm512_cmpeq_epi32_mask(ones,ones);
 
     pcg_extras::seed_seq_from<std::random_device> seed_source;
-    pcg64_fast _rng(seed_source);
-    _vote = 0;  _isVoteDirty = false;
-    _positiveLiteralBlocks.resize(_blockNum, zeros);
-    _negativeLiteralBlocks.resize(_blockNum, zeros);
-    _posInclusionMaskBlocks.resize(_blockNum, zeroMask);
-    _negInclusionMaskBlocks.resize(_blockNum, zeroMask);
-    _posExclusionMaskBlocks.resize(_blockNum, zeroMask);
-    _negExclusionMaskBlocks.resize(_blockNum, zeroMask);
-    _inputMaskBlocks.resize(_blockNum, zeroMask);
-    _inputMaskBlocksInverse.resize(_blockNum, zeroMask);
+    pcg64_fast          _rng(seed_source);
+
+    _positiveLiteralBlocks.resize(_blockNum, _zeros);
+    _posInclusionMaskBlocks.resize(_blockNum, _zeroMask);
+    _posExclusionMaskBlocks.resize(_blockNum, _zeroMask);
+
+    _negativeLiteralBlocks.resize(_blockNum, _zeros);
+    _negInclusionMaskBlocks.resize(_blockNum, _zeroMask);
+    _negExclusionMaskBlocks.resize(_blockNum, _zeroMask);
+
+    _inputMaskBlocks.resize(_blockNum, _zeroMask);
+    _inputMaskBlocksInverse.resize(_blockNum, _zeroMask);
 
     int remainder = _literalNum%16;         // Deal with boundary problem.
     int lastMaskInt = 0;
@@ -33,13 +30,15 @@ _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
         lastMaskInt += (1<<offset);
     }
     _lastValidMask = _mm512_int2mask(lastMaskInt);
+
+    _vote = 0;  _isVoteDirty = false;
 }
 
 /// @brief Pack and 'align' the original vector of int to 512Byte pack with zero-padding if size not equal to 16-mer.
 /// @param original Original vector of 32bit integer.
 /// @return Vector of packed and zero-padded __m512i pack vector.
 vector<__m512i>
-Clause::pack(vector<int> original)
+Clause::pack(vector<int> &original)
 {
     int packNum = original.size()/16 + (original.size()%16==0? 0:1);
     alignas(64) struct pack{
@@ -66,13 +65,24 @@ Clause::pack(vector<int> original)
     return result;
 }
 
+vector<int>
+Clause::unpack(vector<__m512i> &original)
+{
+    vector<int> result(original.size() * 16 ,0);
+    for (int i = 0; i < _blockNum; i++)
+    {
+        _mm512_storeu_epi32(&result[i * 16], original[i]);
+    }
+    return result;
+}
+
 /// @brief Check model integrity before importing
 /// @param targetModel Model that user intend to import
 /// @return Boolean value of the integrity
-bool Clause::modelIntegrityCheck(model targetModel)
+bool Clause::modelIntegrityCheck(model &targetModel)
 {
-    bool isRightLength =    (targetModel.positiveLiteral.size() == _literalNum) &&
-                            (targetModel.negativeLiteral.size() == _literalNum);
+    bool isRightLength =    (targetModel.positiveLiterals.size() == _literalNum) &&
+                            (targetModel.negativeLiterals.size() == _literalNum);
     bool isRightPlace = (targetModel.no == _no);
     return isRightLength && isRightPlace;
 }
@@ -80,25 +90,26 @@ bool Clause::modelIntegrityCheck(model targetModel)
 /// @brief Vote function used for both train and predict procedure.
 /// @param in Data vector that in the shape of ( 1, _literalNum )
 /// @return Vote result, 0 or 1.
-int Clause::vote(vector<__m512i> in)
+int Clause::vote(vector<__m512i> &in)
 {
     if(in.size() != _blockNum)        // Can't happen except some panic programming by myself.
     {
         //std::cout<<"Input vector size is: "<< in.size()<<" not fit for Clause."<<std::endl;
         throw;
     }
-    
-    static __m512i      zeros = _mm512_set1_epi32(0);
-    static __m512i      ones = _mm512_set1_epi32(1);
-    static __mmask16    zeroMask = _mm512_cmpeq_epi32_mask(ones,zeros);
-    vector<__mmask16>   posWrong(_blockNum, zeroMask);
-    vector<__mmask16>   negWrong(_blockNum, zeroMask);
+    /*
+    static __m512i      _zeros = _mm512_set1_epi32(0);
+    static __m512i      _ones = _mm512_set1_epi32(1);
+    static __mmask16    _zeroMask = _mm512_cmpeq_epi32_mask(_ones,_zeros);
+    */
+    vector<__mmask16>   posWrong(_blockNum, _zeroMask);
+    vector<__mmask16>   negWrong(_blockNum, _zeroMask);
     
     for (int i = 0; i < _blockNum; i++)           // Run once per data input.
     {
-        _posInclusionMaskBlocks[i] = _mm512_cmpgt_epi32_mask(_positiveLiteralBlocks[i], zeros);
-        _negInclusionMaskBlocks[i] = _mm512_cmpgt_epi32_mask(_negativeLiteralBlocks[i], zeros);
-        _inputMaskBlocks[i] = _mm512_cmpgt_epi32_mask(in[i], zeros);                // Greater than zero (only possible value is one)
+        _posInclusionMaskBlocks[i] = _mm512_cmpgt_epi32_mask(_positiveLiteralBlocks[i], _zeros);
+        _negInclusionMaskBlocks[i] = _mm512_cmpgt_epi32_mask(_negativeLiteralBlocks[i], _zeros);
+        _inputMaskBlocks[i] = _mm512_cmpgt_epi32_mask(in[i], _zeros);                // Greater than zero (only possible value is one)
 
         _posExclusionMaskBlocks[i] = _knot_mask16(_posInclusionMaskBlocks[i]);
         _negExclusionMaskBlocks[i] = _knot_mask16(_negInclusionMaskBlocks[i]);
@@ -140,18 +151,20 @@ void Clause::feedbackTypeI()
         std::cout<<"Panicking, haven't vote before this feedback action!"<<std::endl;
         throw;
     }
-    static std::discrete_distribution<> d({_sInv, _sInvConj});
-    static vector<int>                  radical(_literalNum,0);
-    static vector<int>                  conservative(_literalNum,0);
-    static __m512i                      zeros = _mm512_set1_epi32(0);
-    static __m512i                      ones = _mm512_set1_epi32(1);
-    static __m512i                      negOnes= _mm512_set1_epi32(-1);
-    static __mmask16                    zeroMask = _mm512_cmpeq_epi32_mask(ones,zeros);
-    static vector<__m512i>              radicalBlock(_blockNum, zeros);
-    static vector<__m512i>              conservativeBlock(_blockNum, zeros);
-    static vector<__mmask16>            radicalPosMaskBlock(_blockNum, zeroMask);
-    static vector<__mmask16>            conservativeNegMaskBlock(_blockNum, zeroMask);
-    static vector<__mmask16>            conservativeNegMaskBlock2(_blockNum, zeroMask);
+    /*
+    static __m512i                      _zeros = _mm512_set1_epi32(0);
+    static __m512i                      _ones = _mm512_set1_epi32(1);
+    static __m512i                      _negOnes= _mm512_set1_epi32(-1);
+    static __mmask16                    _zeroMask = _mm512_cmpeq_epi32_mask(_ones,_zeros);
+    */
+    std::discrete_distribution<> d({_sInv, _sInvConj});
+    vector<int>                  radical(_literalNum,0);
+    vector<int>                  conservative(_literalNum,0);
+    vector<__m512i>              radicalBlock(_blockNum, _zeros);
+    vector<__m512i>              conservativeBlock(_blockNum, _zeros);
+    vector<__mmask16>            radicalPosMaskBlock(_blockNum, _zeroMask);
+    vector<__mmask16>            conservativeNegMaskBlock(_blockNum, _zeroMask);
+    vector<__mmask16>            conservativeNegMaskBlock2(_blockNum, _zeroMask);
 
     for (int i = 0; i < _literalNum; i++)
     {
@@ -162,8 +175,8 @@ void Clause::feedbackTypeI()
 
     for (int i = 0; i < _blockNum; i++)
     {
-        radicalPosMaskBlock[i] = _mm512_cmpeq_epi32_mask(radicalBlock[i], ones);
-        conservativeNegMaskBlock[i] = _mm512_cmpeq_epi32_mask(conservativeBlock[i], ones);
+        radicalPosMaskBlock[i] = _mm512_cmpeq_epi32_mask(radicalBlock[i], _ones);
+        conservativeNegMaskBlock[i] = _mm512_cmpeq_epi32_mask(conservativeBlock[i], _ones);
         conservativeNegMaskBlock2[i] = _knot_mask16(radicalPosMaskBlock[i]);
         if(i == (_blockNum-1))
         {
@@ -177,22 +190,22 @@ void Clause::feedbackTypeI()
             _positiveLiteralBlocks[i] = _mm512_mask_add_epi32(  _positiveLiteralBlocks[i],
                                                                 _kand_mask16(   _inputMaskBlocks[i],
                                                                                 radicalPosMaskBlock[i]),
-                                                                _positiveLiteralBlocks[i], ones);
+                                                                _positiveLiteralBlocks[i], _ones);
 
             _positiveLiteralBlocks[i] = _mm512_mask_add_epi32(  _positiveLiteralBlocks[i],
                                                                 _kand_mask16(   _inputMaskBlocksInverse[i],
                                                                                 conservativeNegMaskBlock[i]),
-                                                                _positiveLiteralBlocks[i], negOnes);
+                                                                _positiveLiteralBlocks[i], _negOnes);
 
             _negativeLiteralBlocks[i] = _mm512_mask_add_epi32(  _negativeLiteralBlocks[i],
                                                                 _kand_mask16(   _inputMaskBlocks[i],
                                                                                 conservativeNegMaskBlock[i]),
-                                                                _negativeLiteralBlocks[i], negOnes);
+                                                                _negativeLiteralBlocks[i], _negOnes);
 
             _negativeLiteralBlocks[i] = _mm512_mask_add_epi32(  _negativeLiteralBlocks[i],
                                                                 _kand_mask16(   _inputMaskBlocksInverse[i],
                                                                                 radicalPosMaskBlock[i]),
-                                                                _negativeLiteralBlocks[i], ones);
+                                                                _negativeLiteralBlocks[i], _ones);
         }
     }
     else
@@ -201,11 +214,11 @@ void Clause::feedbackTypeI()
         {
             _positiveLiteralBlocks[i] = _mm512_mask_add_epi32(  _positiveLiteralBlocks[i],
                                                                 conservativeNegMaskBlock[i],
-                                                                _positiveLiteralBlocks[i], negOnes);
+                                                                _positiveLiteralBlocks[i], _negOnes);
 
             _negativeLiteralBlocks[i] = _mm512_mask_add_epi32(  _negativeLiteralBlocks[i],
                                                                 conservativeNegMaskBlock2[i],
-                                                                _negativeLiteralBlocks[i], negOnes);
+                                                                _negativeLiteralBlocks[i], _negOnes);
         }
     }
     _isVoteDirty = false;
@@ -222,18 +235,46 @@ void Clause::feedbackTypeII()
     }
     if(_vote==0)return;
     
-    static __m512i                      ones = _mm512_set1_epi32(1);
+    //static __m512i                      _ones = _mm512_set1_epi32(1);
     for (int i = 0; i < _blockNum; i++)
     {
         _positiveLiteralBlocks[i] = _mm512_mask_add_epi32(  _positiveLiteralBlocks[i],
                                                             _kand_mask16(   _posExclusionMaskBlocks[i],
                                                                             _inputMaskBlocksInverse[i]),
-                                                            _positiveLiteralBlocks[i], ones);
+                                                            _positiveLiteralBlocks[i], _ones);
 
         _negativeLiteralBlocks[i] = _mm512_mask_add_epi32(  _negativeLiteralBlocks[i], 
                                                             _kand_mask16(   _negExclusionMaskBlocks[i],
                                                                             _inputMaskBlocks[i]),
-                                                            _negativeLiteralBlocks[i], ones);
+                                                            _negativeLiteralBlocks[i], _ones);
     }
 }
 
+Clause::model Clause::exportModel()
+{
+    model result;
+    result.no = _no;
+    vector<int> posLitFilled = unpack(_positiveLiteralBlocks);
+    vector<int> negLitFilled = unpack(_negativeLiteralBlocks);
+    vector<int> posLiteral(_literalNum, 0);
+    vector<int> negLiteral(_literalNum, 0);
+    for (int i = 0; i < _literalNum; i++)
+    {
+        posLiteral[i] = posLitFilled[i];
+        negLiteral[i] = negLitFilled[i];
+    }
+    result.positiveLiterals = posLiteral;
+    result.negativeLiterals = negLiteral;
+    return result;
+}
+
+void Clause::importModel(model &targetModel)
+{
+    if(!modelIntegrityCheck(targetModel))
+    {
+        std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
+        throw; return;
+    }
+    _positiveLiteralBlocks = pack(targetModel.positiveLiterals);
+    _negativeLiteralBlocks = pack(targetModel.negativeLiterals);
+}

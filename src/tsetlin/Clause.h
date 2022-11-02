@@ -13,47 +13,51 @@ public:
     struct ClauseArgs
     {
         int     no;         // Unique tag of all clauses.
-        bool    isPositiveClause;
         int     inputSize;
         double  specificity;
     };
     struct model
     {
-        int         no;
-        vector<int> positiveLiteral;
-        vector<int> negativeLiteral;
+        int             no;
+        vector<int> positiveLiterals;
+        vector<int> negativeLiterals;
         model(){}
     };
 
 private:
-    const int           _no;
-    const bool          _isPositiveClause;
-    const int           _literalNum;
-    const int           _blockNum;
-    const double        _s,_sInv,_sInvConj;     // Allocated granular.
+    const int               _no;
+    const int               _literalNum;
+    const int               _blockNum;
+    const double            _s,_sInv,_sInvConj;     // Allocated granular.
+
+    static const inline __m512i     _ones = _mm512_set1_epi32(1);
+    static const inline __m512i     _zeros = _mm512_set1_epi32(0);
+    static const inline __m512i     _negOnes= _mm512_set1_epi32(-1);
+    static const inline __mmask16   _zeroMask = _mm512_cmpeq_epi32_mask(_ones,_zeros);
+    static const inline __mmask16   _oneMask = _mm512_cmpeq_epi32_mask(_ones,_ones);
 
     pcg64_fast          _rng;
-    // May pack the integer to 16 per group.
     vector<__m512i>     _positiveLiteralBlocks;
     vector<__m512i>     _negativeLiteralBlocks;
-    // May convert the inclusion mask and inputmask to __mmask16
-    __mmask16           _lastValidMask;         // Boundary problem
     vector<__mmask16>   _posInclusionMaskBlocks;
     vector<__mmask16>   _negInclusionMaskBlocks;
     vector<__mmask16>   _posExclusionMaskBlocks;
     vector<__mmask16>   _negExclusionMaskBlocks;
     vector<__mmask16>   _inputMaskBlocks;
     vector<__mmask16>   _inputMaskBlocksInverse;
+    __mmask16           _lastValidMask;         // Boundary problem
     int                 _vote;
     bool                _isVoteDirty;
 
-    bool                modelIntegrityCheck(model targetModel);
-    vector<int>         unpack(vector<__m512i> original);
-    vector<__m512i>     pack(vector<int> original);
+    bool                modelIntegrityCheck(model &targetModel);
+    vector<int>         unpack(vector<__m512i> &original);
+    vector<__m512i>     pack(vector<int> &original);
 public:
     Clause(ClauseArgs args);
-
-    int     vote(vector<__m512i> in);
+    int     vote(vector<__m512i> &in);
     void    feedbackTypeI();
     void    feedbackTypeII();
+
+    model   exportModel();
+    void    importModel(model &targetModel);
 };

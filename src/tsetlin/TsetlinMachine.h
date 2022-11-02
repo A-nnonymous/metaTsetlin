@@ -44,21 +44,21 @@ private:
     vector<vector<__m512i>>     _sharedData;
     vector<vector<int>>         _response;      // Each row is a reflection of multi-dimensional dataset.
 
-    bool    modelIntegrityCheck(model targetModel);
-    bool    dataIntegrityCheck( const vector<vector<int>> data);
-    bool    responseIntegrityCheck(const vector<vector<int>> response);
+    bool    modelIntegrityCheck(model &targetModel);
+    bool    dataIntegrityCheck( const vector<vector<int>> &data);
+    bool    responseIntegrityCheck(const vector<vector<int>> &response);
 
-    vector<vector<int>> transpose(vector<vector<int>> original);
-    vector<__m512i>     pack(vector<int> original);
-    void                dataProbe();
+    vector<vector<int>> transpose(vector<vector<int>> &original);
+    vector<__m512i>     pack(vector<int> &original);
 public:
     TsetlinMachine( MachineArgs args);
 
-    void                load(   vector<vector<int>> data,
-                                vector<vector<int>> response);
+    void                load(   vector<vector<int>> &data,
+                                vector<vector<int>> &response);
     void                train(int epoch);
-    vector<vector<int>> loadAndPredict( vector<vector<int>> data);
+    
+    vector<vector<int>> loadAndPredict(vector<vector<int>> &data);
 
-    //void                importModel(model targetModel);
-    //model               exportModel();
+    void                importModel(model &targetModel);
+    model               exportModel();
 };

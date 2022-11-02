@@ -1,6 +1,6 @@
 #pragma once
 #include "Predator.h"
-
+#include <chrono>
 using std::vector;
 using std::thread;
 
@@ -148,9 +148,13 @@ public:
     {
         for(_iterCounter=1; _iterCounter<=_gSearchArgs.maxIter; _iterCounter++)
         {
+            auto start = std::chrono::high_resolution_clock::now();
             exploitation();
             exploration();
-            std::cout<<"###Iter "<<_iterCounter<< ", best value is optimized to:" <<_gbProperty.value<<std::endl;
+            std::cout<<"###Iter "<<_iterCounter<< ", best value is optimized to:" <<_gbProperty.value;
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> diff = end - start;
+            std::cout <<", consumes : " << diff.count() << " s\n";
         }
         auto result = _gbProperty;
         std::cout<<"\n\nOptimization completed "<< ", best value is optimized to:" <<result.value<<std::endl;

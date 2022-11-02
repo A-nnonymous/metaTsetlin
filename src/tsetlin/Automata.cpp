@@ -1,4 +1,5 @@
 #include "Automata.h"
+#include <thread>
 
 
 Automata::Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target):
@@ -10,25 +11,22 @@ _sLow(args.sLow),
 _sHigh(args.sHigh),
 _dropoutRatio(args.dropoutRatio),
 _sharedInputData(input),
-_targets(target) // Target vector is arranged to 2D vector, each row is an reflection of a sigle dimension of output vector.
+_targets(target)
 {
     pcg_extras::seed_seq_from<std::random_device> seed_source;
     pcg64_fast _rng(seed_source);
     _voteSum = 0;
     Clause::ClauseArgs cArgs;
+
     cArgs.inputSize = args.inputSize;
     for(int i = 0; i< args.clauseNum; i++)
     {
         cArgs.no = i;
         cArgs.specificity = _sLow + i * (_sHigh - _sLow)/((double)_clauseNum);
         
-        cArgs.isPositiveClause = true;
-        Clause posClause(cArgs);
-        _positiveClauses.push_back(std::move(posClause));
-
-        cArgs.isPositiveClause = false;
-        Clause negClause(cArgs);
-        _negativeClauses.push_back(std::move(negClause));
+        Clause temp(cArgs);
+        _positiveClauses.push_back(temp);
+        _negativeClauses.push_back(std::move(temp));
     }
 }
 
@@ -58,19 +56,18 @@ int Automata::forward(vector<__m512i> &datavec)
 
 /// @brief Backward function, containing arrangement of two types of feedback.
 /// @param response Target response of this input vector.
-void Automata::backward(int response)
+void Automata::backward(int &response)
 {
     int     clampedSum = std::min(_T, std::max(-_T, response));
     double   rescaleFactor = 1.0f / static_cast<double>(2 * _T);
 
     double probFeedBack0 = (_T - clampedSum) * rescaleFactor; // The larger the T is, the less biased sum influences
     double probFeedBack1 = (_T + clampedSum) * rescaleFactor;
-    
-    static std::discrete_distribution<> probChoice({probFeedBack0, probFeedBack1});
-    static std::discrete_distribution<> dropout({_dropoutRatio, 1-_dropoutRatio});
-    static vector<bool> actP0(_clauseNum,false);
-    static vector<bool> actP1(_clauseNum,false);
-    static vector<bool> pick(_clauseNum,false);
+    std::discrete_distribution<> probChoice({probFeedBack0, probFeedBack1});
+    std::discrete_distribution<> dropout({_dropoutRatio, 1-_dropoutRatio});
+    vector<bool> actP0(_clauseNum,false);
+    vector<bool> actP1(_clauseNum,false);
+    vector<bool> pick(_clauseNum,false);
     
     for (int i = 0; i < _clauseNum; i++)
     {
@@ -108,7 +105,6 @@ bool Automata::modelIntegrityCheck(model targetModel)
 /// @brief Learning process including forward and backward of a single epoch.
 void Automata::learn()
 {
-    //std::cout<< "Start learning, each sample consume "<< _sharedInputData[0].size()<<std::endl;
     for (int i = 0; i < _sharedInputData.size(); i++)
     {
         forward(_sharedInputData[i]);
@@ -133,4 +129,35 @@ Automata::predict (vector<vector<__m512i>> &input)
         result[i] = thisPrediction;
     }
     return result;
+}
+
+Automata::model Automata::exportModel()
+{
+    model result;
+    result.no = _no;
+    vector<Clause::model> pos, neg;
+    pos.resize(_clauseNum, Clause::model());
+    neg.resize(_clauseNum, Clause::model());
+    for (int i = 0; i < _clauseNum; i++)
+    {
+        pos[i] = _positiveClauses[i].exportModel();
+        neg[i] = _negativeClauses[i].exportModel();
+    }
+    result.positiveClauses = pos;
+    result.negativeClauses = neg;
+    return result;
+}
+
+void Automata::importModel(model &targetModel)
+{
+    if(!modelIntegrityCheck(targetModel))
+    {
+        std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
+        throw; return;
+    }
+    for (int i = 0; i < _clauseNum; i++)
+    {
+        _positiveClauses[i].importModel(targetModel.positiveClauses[i]);
+        _negativeClauses[i].importModel(targetModel.negativeClauses[i]);
+    }
 }
