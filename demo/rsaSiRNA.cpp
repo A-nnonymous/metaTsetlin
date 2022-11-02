@@ -114,7 +114,7 @@ int main(int argc, char const *argv[])
     int             outputSize= 4;
     int             epochNum = 100;
     double          dropoutRatio = 0.5;
-    tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,50.0f);
+    tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,100.0f);
 
     // RSA algorithm arguments;
     int             N = 94;     // Number of individual optimizer.

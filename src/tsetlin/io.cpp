@@ -127,21 +127,21 @@ modelOutput (TsetlinMachine::model model,
         {
           rare[clauseIdx][literalIdx] = model.automatas[3].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
           rare[clauseIdx][literalIdx + literalNum] = model.automatas[3].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          mediumRare[clauseIdx][literalIdx] = model.automatas[3].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumRare[clauseIdx][literalIdx + literalNum] = model.automatas[3].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          mediumWell[clauseIdx][literalIdx] = model.automatas[3].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumWell[clauseIdx][literalIdx + literalNum] = model.automatas[3].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          wellDone[clauseIdx][literalIdx] = model.automatas[3].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          wellDone[clauseIdx][literalIdx + literalNum] = model.automatas[3].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+          mediumRare[clauseIdx][literalIdx] = model.automatas[2].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+          mediumRare[clauseIdx][literalIdx + literalNum] = model.automatas[2].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+          mediumWell[clauseIdx][literalIdx] = model.automatas[1].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+          mediumWell[clauseIdx][literalIdx + literalNum] = model.automatas[1].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+          wellDone[clauseIdx][literalIdx] = model.automatas[0].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+          wellDone[clauseIdx][literalIdx + literalNum] = model.automatas[0].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
           
           rareNegative[clauseIdx][literalIdx] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
           rareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumRareNegative[clauseIdx][literalIdx] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumRareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumWellNegative[clauseIdx][literalIdx] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumWellNegative[clauseIdx][literalIdx + literalNum] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          wellDoneNegative[clauseIdx][literalIdx] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          wellDoneNegative[clauseIdx][literalIdx + literalNum] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+          mediumRareNegative[clauseIdx][literalIdx] = model.automatas[2].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+          mediumRareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[2].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+          mediumWellNegative[clauseIdx][literalIdx] = model.automatas[1].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+          mediumWellNegative[clauseIdx][literalIdx + literalNum] = model.automatas[1].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+          wellDoneNegative[clauseIdx][literalIdx] = model.automatas[0].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+          wellDoneNegative[clauseIdx][literalIdx + literalNum] = model.automatas[0].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
         }
     }
     write_csv (rare, clausePerOutput, literalNum,

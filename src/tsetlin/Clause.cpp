@@ -68,11 +68,27 @@ Clause::pack(vector<int> &original)
 vector<int>
 Clause::unpack(vector<__m512i> &original)
 {
-    vector<int> result(original.size() * 16 ,0);
+    alignas(64) struct pack{
+        int data[16];
+        pack(){
+            for (int i = 0; i < 16; i++)
+            {
+                data[i] = 0;
+            }
+            
+        }
+    };
+    vector<pack> res(_blockNum,pack());
     for (int i = 0; i < _blockNum; i++)
     {
-        _mm512_storeu_epi32(&result[i * 16], original[i]);
+        _mm512_storeu_epi32(&res[i].data, original[i]);
     }
+    vector<int> result(_literalNum,0);
+    for (int i = 0; i < _literalNum; i++)
+    {
+        result[i] = res[i/16].data[i%16];
+    }
+    
     return result;
 }
 
