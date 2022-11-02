@@ -14,8 +14,12 @@ include_directories(src/pcg)
 add_subdirectory(src/metaHeuristic)
 add_subdirectory(src/tsetlin)
 include_directories(src/tsetlin)
+include_directories(src/metaHeuristic/rsa)
+
 add_executable(test demo/test.cpp)
 add_executable(xor demo/xor.cpp)
+add_executable(rsademo demo/rsaDemo.cpp)
 
 target_link_libraries(test pcgLib tmLib)
 target_link_libraries(xor pcgLib tmLib )
+target_link_libraries(rsademo pcgLib tmLib rsaLib)
