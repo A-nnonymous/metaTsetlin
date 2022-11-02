@@ -43,7 +43,7 @@ private:
     vector<vector<__m512i>>     &_sharedInputData;  // When start traning, reference dataset from TM.
     vector<int>                 &_targets;
 
-    std::mt19937                _rng;               // Shared random number generator using Mersenne twister.
+    pcg64_fast                  _rng;
     int                         _voteSum;           // Sum of all clauses' vote.
     vector<Clause>              _positiveClauses;
     vector<Clause>              _negativeClauses;
@@ -51,14 +51,9 @@ private:
     int     forward(vector<__m512i> &datavec);
     void    backward(int response);
     bool    modelIntegrityCheck(model targetModel);
-    //////////////////////debug/////////////////////////
-    vector<int>         unpack(vector<__m512i> original);
-    //////////////////////debug/////////////////////////
 public:
     Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target);
 
     void                learn();
     vector<Prediction>  predict(vector<vector<__m512i>> &input);
-    //void                importModel(model targetModel);
-    //model               exportModel();
 };

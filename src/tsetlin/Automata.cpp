@@ -12,7 +12,8 @@ _dropoutRatio(args.dropoutRatio),
 _sharedInputData(input),
 _targets(target) // Target vector is arranged to 2D vector, each row is an reflection of a sigle dimension of output vector.
 {
-    _rng = std::mt19937(std::random_device{}());
+    pcg_extras::seed_seq_from<std::random_device> seed_source;
+    pcg64_fast _rng(seed_source);
     _voteSum = 0;
     Clause::ClauseArgs cArgs;
     cArgs.inputSize = args.inputSize;
@@ -31,40 +32,6 @@ _targets(target) // Target vector is arranged to 2D vector, each row is an refle
     }
 }
 
-
-/*
-/// @brief Check and import Automata model
-/// @param targetModel Model depacked and passed from its caller.
-void Automata::importModel(model targetModel)
-{
-    if(!modelIntegrityCheck(targetModel))
-    {
-        std::cout<< "Automata model integrity check failed at automata"<<_no<<std::endl;
-        throw;return;
-    }
-    for (int i = 0; i < _clauseNum; i++)
-    {
-        _positiveClauses[i].importModel(targetModel.positiveClauses[i]);
-        _negativeClauses[i].importModel(targetModel.negativeClauses[i]);
-    }
-}
-
-/// @brief Calling every clause to export their automatons' state and pack them to the caller.
-/// @return Packed struct of Automata model.
-Automata::model Automata::exportModel()
-{
-    Automata::model result;
-    result.no = _no;
-    result.positiveClauses.resize(_clauseNum,Clause::model());
-    result.negativeClauses.resize(_clauseNum,Clause::model());
-    for (int i = 0; i < _clauseNum; i++)
-    {
-        result.positiveClauses[i] = _positiveClauses[i].exportModel();
-        result.negativeClauses[i] = _negativeClauses[i].exportModel();
-    }
-    return result;
-}
-*/
 
 /// @brief Forward function, doing vote for learning or predicting.
 /// @param datavec A single vector of input data containing _inputSize number of elements.
@@ -107,9 +74,9 @@ void Automata::backward(int response)
     
     for (int i = 0; i < _clauseNum; i++)
     {
-        actP0[i] = (probChoice(_rng) == 0);          // Generate action vector with possibility of probFeedBack0.
-        actP1[i] = (probChoice(_rng) == 1);
-        pick[i] = (dropout(_rng) == 1);
+        actP0[i] = !probChoice(_rng);          // Generate action vector with possibility of probFeedBack0.
+        actP1[i] = probChoice(_rng);
+        pick[i] = dropout(_rng);
     }
 
     for (int i = 0; i < _clauseNum; i++)

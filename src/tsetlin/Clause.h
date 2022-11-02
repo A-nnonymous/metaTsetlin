@@ -4,7 +4,7 @@
 #include <random>
 #include <immintrin.h>
 #include <assert.h>
-
+#include "pcg_random.hpp"
 using std::vector;
 
 /// @brief This clause use integer as literal as default.
@@ -30,9 +30,9 @@ private:
     const bool          _isPositiveClause;
     const int           _literalNum;
     const int           _blockNum;
-    const double        _s,_sInv,_sInvConj;     // Granular parameter passed from upper class, can be multigranular.
+    const double        _s,_sInv,_sInvConj;     // Allocated granular.
 
-    std::mt19937        _rng;
+    pcg64_fast          _rng;
     // May pack the integer to 16 per group.
     vector<__m512i>     _positiveLiteralBlocks;
     vector<__m512i>     _negativeLiteralBlocks;

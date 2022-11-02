@@ -31,10 +31,10 @@ int main(int argc, char const *argv[])
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
     vector<vector<int>>   test_seqs(test_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   test_scores(test_data_size, vector(output_size, 0));
-    parse_huesken_seqs("/home/data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
-    parse_huesken_scores("/home/data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
-    parse_huesken_seqs("/home/data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
-    parse_huesken_scores("/home/data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
+    parse_huesken_seqs("../data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
+    parse_huesken_scores("../data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
+    parse_huesken_seqs("../data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
+    parse_huesken_scores("../data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
     TsetlinMachine::MachineArgs mArgs;
     mArgs.clausePerOutput = clausePerOutput;
     mArgs.dropoutRatio = dropoutRatio;
@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
     TsetlinMachine tm(mArgs);
     
     tm.load(train_seqs,train_scores);
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10; i++)
     {
         auto start = std::chrono::high_resolution_clock::now();
         tm.train(1);
