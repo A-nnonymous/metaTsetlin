@@ -89,13 +89,13 @@ parse_huesken_scores (std::string path, vector<vector<int> > &result)
     while (std::getline (score_file, score_string))
     {
         this_score = ::atof (score_string.c_str ());
-        if (this_score < 0.4)
+        if (this_score < 0.3)
             result[idx++] = { 0, 0, 0, 1 };
-        if (this_score >= 0.4 && this_score < 0.6)
+        if (this_score >= 0.3 && this_score < 0.5)
             result[idx++] = { 0, 0, 1, 0 };
-        if (this_score >= 0.6 && this_score < 0.8)
+        if (this_score >= 0.5 && this_score < 0.7)
             result[idx++] = { 0, 1, 0, 0 };
-        if (this_score >= 0.8)
+        if (this_score >= 0.7)
             result[idx++] = { 1, 0, 0, 0 };
     }
 }

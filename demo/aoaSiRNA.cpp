@@ -1,7 +1,7 @@
 #include "TsetlinMachine.h"
 #include "io.h"
 #include <climits>
-#include "RSAoptimizer.h"
+#include "AOAoptimizer.h"
 using std::vector;
 
 struct modelAndArgs
@@ -116,21 +116,17 @@ int main(int argc, char const *argv[])
     double          dropoutRatio = 0.5;
     tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,100.0f);
 
-    // RSA algorithm arguments;
-    int             N = 94;     // Number of individual optimizer.
-    int             dimNum = 2;
-    int             maxIter = 100;
-    double          alpha = 0.1;
-    double          beta = 0.005;
-
-    vector<int> mins{100, 80};
-    vector<int> maxes{500, 1500};
-    auto limits = Predator<modelAndArgs,tsetlinArgs,int>::rangeLimits(mins,maxes);
-    auto searchArgs = Predator<modelAndArgs,tsetlinArgs,int>::searchArgs(dimNum,maxIter,alpha,beta,limits);
-    
-    auto RSA = RSAoptimizer<modelAndArgs,tsetlinArgs,int>(N, siRNAdemo,funcArgs,searchArgs);
-    modelAndArgs result;
-    result = RSA.optimize();
+    AOAoptimizer<modelAndArgs, tsetlinArgs, int>::args arg;
+    arg.dimensionNum = 2;
+    arg.optimizerNum= 94;
+    arg.evaluateFunc = siRNAdemo;
+    arg.gFuncArgs = funcArgs;
+    arg.iterNum= 100;
+    arg.lowerBounds= vector<int>{100,20};
+    arg.upperBounds= vector<int>{1000, 1000};
+    AOAoptimizer<modelAndArgs, tsetlinArgs, int> env(arg);
+    modelAndArgs result = env.optimize();
+    std::cout<<result.value<<std::endl;
     modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
     return 0;
 }

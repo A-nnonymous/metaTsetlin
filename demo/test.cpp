@@ -46,7 +46,7 @@ int main(int argc, char const *argv[])
     TsetlinMachine tm(mArgs);
     
     tm.load(train_seqs,train_scores);
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 30; i++)
     {
         auto start = std::chrono::high_resolution_clock::now();
         tm.train(1);

@@ -1,5 +1,6 @@
 #pragma once
 #include "Predator.h"
+#include <thread>
 #include <chrono>
 using std::vector;
 using std::thread;
@@ -10,7 +11,7 @@ using std::thread;
 /// @tparam funcArgs Fitness function arguments(trivial or struct) passed from user.
 /// @tparam rangeDtype Data type of search range.
 template<typename output, typename funcArgs, typename rangeDtype>
-class Habitat{
+class RSAoptimizer{
 private:
     //std::mt19937                        _rng;
     pcg64_fast                          _rng;
@@ -103,7 +104,7 @@ public:
     /// @param fitnessFunc Fitness function used to evaluate arguments.
     /// @param gFuncArgs Fitness function related arguments passed from user, must include vector named 'vars' stand for changable parameters.
     /// @param gSearchArgs Optimizer related arguments passed from user.
-    Habitat(int                                                             predatorNum,
+    RSAoptimizer(int                                                             predatorNum,
             output                                                          (*fitnessFunc)(funcArgs),
             funcArgs                                                        gFuncArgs,
             typename Predator<output,funcArgs,rangeDtype>::searchArgs       gSearchArgs)

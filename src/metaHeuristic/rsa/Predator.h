@@ -1,7 +1,6 @@
 #include <vector>
 #include <iostream>
 #include <random>
-#include <thread>
 #include <climits>
 #include "pcg_random.hpp"
 
@@ -25,7 +24,7 @@ public:
         }
     };
     struct searchArgs
-    {   // Awaiting completion......
+    {   
         int                 dimension;
         int                 maxIter;
         double              alpha;

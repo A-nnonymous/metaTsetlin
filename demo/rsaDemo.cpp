@@ -1,4 +1,4 @@
-#include "Habitat.h"
+#include "RSAoptimizer.h"
 #include <climits>
 
 /// @brief Correlated to template argument "output", must contain member "value"
@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
     std::vector<double> max{10,10};
     auto limits = Predator<utility,point,double>::rangeLimits(min,max);
     auto search = Predator<utility,point,double>::searchArgs(2,200,0.1,0.005,limits);
-    auto test = Habitat<utility,point,double>(50,concave,point(), search);
+    auto test = RSAoptimizer<utility,point,double>(50,concave,point(), search);
     auto result = test.optimize();
     test.snapShot();
     std::cout<<"function:f(x,y) = (x^2 + y^2) is optimized to: "<< result.value<<std::endl;
