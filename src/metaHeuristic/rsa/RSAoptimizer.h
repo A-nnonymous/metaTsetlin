@@ -155,7 +155,11 @@ public:
             std::cout<<"###Iter "<<_iterCounter<< ", best value is optimized to:" <<_gbProperty.value;
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> diff = end - start;
-            std::cout <<", consumes : " << diff.count() << " s\n";
+            int minuteETA = int((_gSearchArgs.maxIter-_iterCounter)*diff.count()/60);
+            int secETA = (diff.count()*(_gSearchArgs.maxIter-_iterCounter) - minuteETA*60);
+            std::cout <<", consumes : " << diff.count() << " s\tETA: "<<minuteETA<<"min "
+                                    <<secETA<<"s"<<std::endl;
+
         }
         auto result = _gbProperty;
         std::cout<<"\n\nOptimization completed "<< ", best value is optimized to:" <<result.value<<std::endl;
@@ -164,7 +168,7 @@ public:
         {
             std::cout<<"\tArgs["<< i<<"] = "<< _gbPosition[i]<<std::endl;
         }
-        
+
         return result;
     }
 

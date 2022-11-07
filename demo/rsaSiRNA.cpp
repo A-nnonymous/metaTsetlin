@@ -112,14 +112,14 @@ int main(int argc, char const *argv[])
     // Tsetlin Machine common arguments.
     int             inputSize= 84;
     int             outputSize= 4;
-    int             epochNum = 100;
-    double          dropoutRatio = 0.5;
+    int             epochNum = 60;
+    double          dropoutRatio = 0.3;
     tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,100.0f);
 
     // RSA algorithm arguments;
     int             N = 94;     // Number of individual optimizer.
     int             dimNum = 2;
-    int             maxIter = 100;
+    int             maxIter = 50;
     double          alpha = 0.1;
     double          beta = 0.005;
 
