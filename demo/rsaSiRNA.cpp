@@ -60,10 +60,10 @@ modelAndArgs siRNAdemo(tsetlinArgs funcArgs)
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
     vector<vector<int>>   test_seqs(test_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   test_scores(test_data_size, vector(output_size, 0));
-    parse_huesken_seqs("../data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
-    parse_huesken_scores("../data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
-    parse_huesken_seqs("../data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
-    parse_huesken_scores("../data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
+    encodeHueskenSeqs("../data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
+    encodeHueskenScores("../data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
+    encodeHueskenSeqs("../data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
+    encodeHueskenScores("../data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
 
     TsetlinMachine::model       bestModel;
     double                      bestPrecision = 0;

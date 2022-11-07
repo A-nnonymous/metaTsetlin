@@ -36,28 +36,29 @@ private:
     static const inline __mmask16   _zeroMask = _mm512_cmpeq_epi32_mask(_ones,_zeros);
     static const inline __mmask16   _oneMask = _mm512_cmpeq_epi32_mask(_ones,_ones);
 
-    pcg64_fast          _rng;
-    vector<__m512i>     _positiveLiteralBlocks;
-    vector<__m512i>     _negativeLiteralBlocks;
-    vector<__mmask16>   _posInclusionMaskBlocks;
-    vector<__mmask16>   _negInclusionMaskBlocks;
-    vector<__mmask16>   _posExclusionMaskBlocks;
-    vector<__mmask16>   _negExclusionMaskBlocks;
-    vector<__mmask16>   _inputMaskBlocks;
-    vector<__mmask16>   _inputMaskBlocksInverse;
-    __mmask16           _lastValidMask;         // Boundary problem
-    int                 _vote;
-    bool                _isVoteDirty;
+    pcg64_fast              _rng;
+    vector<__m512i>         _positiveLiteralBlocks;
+    vector<__m512i>         _negativeLiteralBlocks;
+    vector<__mmask16>       _posInclusionMaskBlocks;
+    vector<__mmask16>       _negInclusionMaskBlocks;
+    vector<__mmask16>       _posExclusionMaskBlocks;
+    vector<__mmask16>       _negExclusionMaskBlocks;
+    vector<__mmask16>       _inputMaskBlocks;
+    vector<__mmask16>       _inputMaskBlocksInverse;
+    __mmask16               _lastValidMask;         // Boundary problem
+    
+    int                     _vote;
 
-    bool                modelIntegrityCheck(model &targetModel);
-    vector<int>         unpack(vector<__m512i> &original);
-    vector<__m512i>     pack(vector<int> &original);
+    bool                    modelIntegrityCheck(model &targetModel);
+    vector<int>             unpack(vector<__m512i> &original)noexcept;
+    vector<__m512i>         pack(vector<int> &original)noexcept;
 public:
     Clause(ClauseArgs args);
-    int     vote(vector<__m512i> &in);
-    void    feedbackTypeI();
-    void    feedbackTypeII();
 
-    model   exportModel();
-    void    importModel(model &targetModel);
+    int                     vote(vector<__m512i> &in)noexcept;
+    void                    feedbackTypeI()noexcept;
+    void                    feedbackTypeII()noexcept;
+
+    model                   exportModel();
+    void                    importModel(model &targetModel);
 };

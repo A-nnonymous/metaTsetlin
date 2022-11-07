@@ -13,8 +13,8 @@ _dropoutRatio(args.dropoutRatio),
 _sharedInputData(input),
 _targets(target)
 {
-    pcg_extras::seed_seq_from<std::random_device> seed_source;
-    pcg64_fast _rng(seed_source);
+    static pcg_extras::seed_seq_from<std::random_device> seed_source;
+    static pcg64_fast _rng(seed_source);
     _voteSum = 0;
     Clause::ClauseArgs cArgs;
 

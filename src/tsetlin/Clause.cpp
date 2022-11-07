@@ -31,14 +31,14 @@ _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
     }
     _lastValidMask = _mm512_int2mask(lastMaskInt);
 
-    _vote = 0;  _isVoteDirty = false;
+    _vote = 0;
 }
 
 /// @brief Pack and 'align' the original vector of int to 512Byte pack with zero-padding if size not equal to 16-mer.
 /// @param original Original vector of 32bit integer.
 /// @return Vector of packed and zero-padded __m512i pack vector.
 vector<__m512i>
-Clause::pack(vector<int> &original)
+Clause::pack(vector<int> &original)noexcept
 {
     int packNum = original.size()/16 + (original.size()%16==0? 0:1);
     alignas(64) struct pack{
@@ -66,7 +66,7 @@ Clause::pack(vector<int> &original)
 }
 
 vector<int>
-Clause::unpack(vector<__m512i> &original)
+Clause::unpack(vector<__m512i> &original)noexcept
 {
     alignas(64) struct pack{
         int data[16];
@@ -106,18 +106,8 @@ bool Clause::modelIntegrityCheck(model &targetModel)
 /// @brief Vote function used for both train and predict procedure.
 /// @param in Data vector that in the shape of ( 1, _literalNum )
 /// @return Vote result, 0 or 1.
-int Clause::vote(vector<__m512i> &in)
+int Clause::vote(vector<__m512i> &in)noexcept
 {
-    if(in.size() != _blockNum)        // Can't happen except some panic programming by myself.
-    {
-        //std::cout<<"Input vector size is: "<< in.size()<<" not fit for Clause."<<std::endl;
-        throw;
-    }
-    /*
-    static __m512i      _zeros = _mm512_set1_epi32(0);
-    static __m512i      _ones = _mm512_set1_epi32(1);
-    static __mmask16    _zeroMask = _mm512_cmpeq_epi32_mask(_ones,_zeros);
-    */
     vector<__mmask16>   posWrong(_blockNum, _zeroMask);
     vector<__mmask16>   negWrong(_blockNum, _zeroMask);
     
@@ -131,7 +121,7 @@ int Clause::vote(vector<__m512i> &in)
         _negExclusionMaskBlocks[i] = _knot_mask16(_negInclusionMaskBlocks[i]);
         _inputMaskBlocksInverse[i] = _knot_mask16(_inputMaskBlocks[i]);
         
-        if(i == (_blockNum-1))    // Last block, may have boundary problem.
+        if(i == (_blockNum-1))[[unlikely]]    // Last block, may have boundary problem.
         {
             _posExclusionMaskBlocks[i] = _kand_mask16(_posExclusionMaskBlocks[i], _lastValidMask);
             _negExclusionMaskBlocks[i] = _kand_mask16(_negExclusionMaskBlocks[i], _lastValidMask);
@@ -152,27 +142,16 @@ int Clause::vote(vector<__m512i> &in)
         posNoProblem = (_mm512_mask2int(posWrong[i]) == 0 );    // So far so good.
         negNoProblem = (_mm512_mask2int(negWrong[i]) == 0 );
         hasProblem = !(posNoProblem && negNoProblem);
-        if(hasProblem) break;         // Break when first unsatisfied literal occured.
+        if(hasProblem)[[likely]] break;         // Break when first unsatisfied literal occured.
     }
     int result = (hasProblem? 0:1);
-    _vote = result; _isVoteDirty = true;
+    _vote = result;
     return result;
 }
 
 /// @brief Reinforce positive and negative literals according to 's' ,input, previous vote.
-void Clause::feedbackTypeI()
+void Clause::feedbackTypeI()noexcept
 {
-    if(!_isVoteDirty)       // Vote is untouched before feedback, must not happen.
-    {
-        std::cout<<"Panicking, haven't vote before this feedback action!"<<std::endl;
-        throw;
-    }
-    /*
-    static __m512i                      _zeros = _mm512_set1_epi32(0);
-    static __m512i                      _ones = _mm512_set1_epi32(1);
-    static __m512i                      _negOnes= _mm512_set1_epi32(-1);
-    static __mmask16                    _zeroMask = _mm512_cmpeq_epi32_mask(_ones,_zeros);
-    */
     std::discrete_distribution<> d({_sInv, _sInvConj});
     vector<int>                  radical(_literalNum,0);
     vector<int>                  conservative(_literalNum,0);
@@ -194,7 +173,7 @@ void Clause::feedbackTypeI()
         radicalPosMaskBlock[i] = _mm512_cmpeq_epi32_mask(radicalBlock[i], _ones);
         conservativeNegMaskBlock[i] = _mm512_cmpeq_epi32_mask(conservativeBlock[i], _ones);
         conservativeNegMaskBlock2[i] = _knot_mask16(radicalPosMaskBlock[i]);
-        if(i == (_blockNum-1))
+        if(i == (_blockNum-1))[[unlikely]]
         {
             conservativeNegMaskBlock2[i] = _kand_mask16(conservativeNegMaskBlock2[i], _lastValidMask);
         }
@@ -237,21 +216,13 @@ void Clause::feedbackTypeI()
                                                                 _negativeLiteralBlocks[i], _negOnes);
         }
     }
-    _isVoteDirty = false;
 }
 
 /// @brief Reinforce positive and negative literals according to inclusion, input, previous vote.
 /// @param in Previous input vector.
-void Clause::feedbackTypeII()
+void Clause::feedbackTypeII()noexcept
 {
-    if(!_isVoteDirty)       // Vote is untouched before feedback, must not happen.
-    {
-        std::cout<<"Panicking, haven't vote before this feedback action!"<<std::endl;
-        throw;
-    }
     if(_vote==0)return;
-    
-    //static __m512i                      _ones = _mm512_set1_epi32(1);
     for (int i = 0; i < _blockNum; i++)
     {
         _positiveLiteralBlocks[i] = _mm512_mask_add_epi32(  _positiveLiteralBlocks[i],
@@ -286,7 +257,7 @@ Clause::model Clause::exportModel()
 
 void Clause::importModel(model &targetModel)
 {
-    if(!modelIntegrityCheck(targetModel))
+    if(!modelIntegrityCheck(targetModel))[[unlikely]]
     {
         std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
         throw; return;

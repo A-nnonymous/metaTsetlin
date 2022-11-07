@@ -1,4 +1,5 @@
 #include "Optimizer.h"
+#include <chrono>
 
 using std::vector;
 using std::thread;
@@ -64,7 +65,6 @@ private:
             double thisValue = _optimizers[i].getValue();
             if(thisValue > _gbestValue)
             {
-                std::cout<<"global optima renewed to "<< thisValue<<std::endl;
                 _gbestValue = thisValue;
                 bestCandidateIdx = i;
                 touchedBest = true;
@@ -133,8 +133,18 @@ public:
         {
             _w = (-2/M_PI) * (atan(i)) + 1 + 0.5 * exp(-i/5);
             _MOP = 1 - (pow(i,(1 / Alpha)) / pow(_iterNum, (1 / Alpha)));
+            auto start = std::chrono::high_resolution_clock::now();
             exploitation();
             exploration();
+            std::cout<<"###Iter "<<i<< ", best value is optimized to:" <<_gbestProperty.value;
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> diff = end - start;
+            int minuteETA = int((_iterNum-i)*diff.count()/60);
+            int secETA = (diff.count()*(_iterNum-i) - minuteETA*60);
+            std::cout <<", consumes : " << diff.count() << " s\t"
+                        << "ETA: "<<minuteETA<<"min "
+                                    <<secETA<<"s"<<std::endl;
+
         }
         result = _gbestProperty;
 

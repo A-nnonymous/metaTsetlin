@@ -60,10 +60,10 @@ modelAndArgs siRNAdemo(tsetlinArgs funcArgs)
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
     vector<vector<int>>   test_seqs(test_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   test_scores(test_data_size, vector(output_size, 0));
-    parse_huesken_seqs("../data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
-    parse_huesken_scores("../data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
-    parse_huesken_seqs("../data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
-    parse_huesken_scores("../data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
+    encodeHueskenSeqs("../data/siRNA/e2s/e2s_training_seq.csv", train_seqs);
+    encodeHueskenScores("../data/siRNA/e2s/e2s_training_efficiency.csv", train_scores);
+    encodeHueskenSeqs("../data/siRNA/e2s/e2s_test_seq.csv", test_seqs);
+    encodeHueskenScores("../data/siRNA/e2s/e2s_test_efficiency.csv", test_scores);
 
     TsetlinMachine::model       bestModel;
     double                      bestPrecision = 0;
@@ -112,8 +112,8 @@ int main(int argc, char const *argv[])
     // Tsetlin Machine common arguments.
     int             inputSize= 84;
     int             outputSize= 4;
-    int             epochNum = 100;
-    double          dropoutRatio = 0.5;
+    int             epochNum = 60;
+    double          dropoutRatio = 0.3;
     tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,100.0f);
 
     AOAoptimizer<modelAndArgs, tsetlinArgs, int>::args arg;
@@ -121,9 +121,9 @@ int main(int argc, char const *argv[])
     arg.optimizerNum= 94;
     arg.evaluateFunc = siRNAdemo;
     arg.gFuncArgs = funcArgs;
-    arg.iterNum= 100;
+    arg.iterNum= 50;
     arg.lowerBounds= vector<int>{100,20};
-    arg.upperBounds= vector<int>{1000, 1000};
+    arg.upperBounds= vector<int>{500, 1500};
     AOAoptimizer<modelAndArgs, tsetlinArgs, int> env(arg);
     modelAndArgs result = env.optimize();
     std::cout<<result.value<<std::endl;

@@ -1,5 +1,6 @@
 #include "io.h"
 using std::vector;
+using std::string;
 bool
 write_csv_row (vector<float> data, std::ofstream *output)
 {
@@ -68,7 +69,7 @@ siRNA2SIG (std::string raw_string)
   return result;
 }
 void
-parse_huesken_seqs (std::string path, vector<vector<int> > &result)
+encodeHueskenSeqs (std::string path, vector<vector<int> > &result)
 {
     std::ifstream seqfile (path);
     std::string thisline;
@@ -80,7 +81,7 @@ parse_huesken_seqs (std::string path, vector<vector<int> > &result)
 }
 
 void
-parse_huesken_scores (std::string path, vector<vector<int> > &result)
+encodeHueskenScores (std::string path, vector<vector<int> > &result)
 {
     std::ifstream score_file (path);
     std::string score_string;
@@ -89,17 +90,45 @@ parse_huesken_scores (std::string path, vector<vector<int> > &result)
     while (std::getline (score_file, score_string))
     {
         this_score = ::atof (score_string.c_str ());
-        if (this_score < 0.3)
+        if (this_score < 0.5)[[unlikely]]
             result[idx++] = { 0, 0, 0, 1 };
-        if (this_score >= 0.3 && this_score < 0.5)
+        if (this_score >= 0.5 && this_score < 0.7)[[likely]]
             result[idx++] = { 0, 0, 1, 0 };
-        if (this_score >= 0.5 && this_score < 0.7)
+        if (this_score >= 0.7 && this_score < 0.9)[[likely]]
             result[idx++] = { 0, 1, 0, 0 };
-        if (this_score >= 0.7)
+        if (this_score >= 0.9)[[unlikely]]
             result[idx++] = { 1, 0, 0, 0 };
     }
 }
 
+vector<vector<int>> 
+decodeSeqs( vector<int> &original, int wordSize)
+{
+    int seqLen = original.size() / (2 * wordSize);
+    vector<vector<int>> result(wordSize* 2 , vector<int>(seqLen, 0));
+    for (int i = 0; i < original.size()/2; i++)
+    {
+        int thisWord = i % wordSize;
+        int thisPos = i/wordSize;
+        result[thisWord][thisPos] = original[i];        //positive.
+        result[thisWord + wordSize][thisPos] = original[i + original.size()/2]; //negative.
+    }
+    
+    return result;
+
+}
+void modelOutput(   TsetlinMachine::model   &model,
+                    double                  Precision,
+                    vector<string>          tierTags,
+                    string                  outputPath)
+{
+    int clausePerResponse = model.modelArgs.clausePerOutput; // only represent clause number of a single polarity.
+    int literalNum = model.modelArgs.inputSize; // same as above.
+    int tierNum = model.modelArgs.outputSize;
+
+    vector<vector<vector<int>>> positive;       // tierNum * clauseNum * (literalNum*2);
+    vector<vector<vector<int>>> negative;
+}
 void
 modelOutput (TsetlinMachine::model model,
              double precision,
@@ -125,23 +154,22 @@ modelOutput (TsetlinMachine::model model,
     {
         for (int literalIdx = 0; literalIdx < literalNum; literalIdx++)
         {
-          rare[clauseIdx][literalIdx] = model.automatas[3].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          rare[clauseIdx][literalIdx + literalNum] = model.automatas[3].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          mediumRare[clauseIdx][literalIdx] = model.automatas[2].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumRare[clauseIdx][literalIdx + literalNum] = model.automatas[2].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          mediumWell[clauseIdx][literalIdx] = model.automatas[1].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumWell[clauseIdx][literalIdx + literalNum] = model.automatas[1].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          wellDone[clauseIdx][literalIdx] = model.automatas[0].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
-          wellDone[clauseIdx][literalIdx + literalNum] = model.automatas[0].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
-          
-          rareNegative[clauseIdx][literalIdx] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          rareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumRareNegative[clauseIdx][literalIdx] = model.automatas[2].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumRareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[2].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumWellNegative[clauseIdx][literalIdx] = model.automatas[1].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          mediumWellNegative[clauseIdx][literalIdx + literalNum] = model.automatas[1].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          wellDoneNegative[clauseIdx][literalIdx] = model.automatas[0].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
-          wellDoneNegative[clauseIdx][literalIdx + literalNum] = model.automatas[0].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            rare[clauseIdx][literalIdx] = model.automatas[3].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+            rare[clauseIdx][literalIdx + literalNum] = model.automatas[3].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+            mediumRare[clauseIdx][literalIdx] = model.automatas[2].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+            mediumRare[clauseIdx][literalIdx + literalNum] = model.automatas[2].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+            mediumWell[clauseIdx][literalIdx] = model.automatas[1].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+            mediumWell[clauseIdx][literalIdx + literalNum] = model.automatas[1].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+            wellDone[clauseIdx][literalIdx] = model.automatas[0].positiveClauses[clauseIdx].positiveLiterals[literalIdx];
+            wellDone[clauseIdx][literalIdx + literalNum] = model.automatas[0].positiveClauses[clauseIdx].negativeLiterals[literalIdx];
+            rareNegative[clauseIdx][literalIdx] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            rareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[3].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            mediumRareNegative[clauseIdx][literalIdx] = model.automatas[2].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            mediumRareNegative[clauseIdx][literalIdx + literalNum] = model.automatas[2].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            mediumWellNegative[clauseIdx][literalIdx] = model.automatas[1].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            mediumWellNegative[clauseIdx][literalIdx + literalNum] = model.automatas[1].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            wellDoneNegative[clauseIdx][literalIdx] = model.automatas[0].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
+            wellDoneNegative[clauseIdx][literalIdx + literalNum] = model.automatas[0].negativeClauses[clauseIdx].positiveLiterals[literalIdx];
         }
     }
     write_csv (rare, clausePerOutput, literalNum,

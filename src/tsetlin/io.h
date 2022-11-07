@@ -10,17 +10,18 @@
 
 #define COMPLETED true
 #define FAILED false
+using std::vector;
+using std::string;
+vector<int> siRNA2SIG(string raw_string);
 
-std::vector<int> siRNA2SIG(std::string raw_string);
+void encodeHueskenSeqs(string path, 
+                        vector<vector<int>> &result);
 
-void parse_huesken_seqs(std::string path, 
-                        std::vector<std::vector<int>> &result);
-
-void parse_huesken_scores(std::string path, 
-                          std::vector<std::vector<int>> &result);
+void encodeHueskenScores(string path, 
+                          vector<vector<int>> &result);
 
 
-bool write_csv_row(std::vector<float> data, std::ofstream *output);
+bool write_csv_row(vector<float> data, std::ofstream *output);
 
 
 
@@ -28,3 +29,8 @@ void
 modelOutput (TsetlinMachine::model model,
              double precision,
              std::string outputpath);
+
+void modelOutput(   TsetlinMachine::model   model,
+                    double                  Precision,
+                    vector<string>          tierTags,
+                    string                  outputPath);
