@@ -12,7 +12,7 @@ write_csv_row (vector<float> data, std::ofstream *output)
     (*output) << data[i] << "\n";
     return COMPLETED;
 }
-bool write_csv(vector<vector<int>>data, int row, int column, std::string filepath)
+bool write_csv(vector<vector<int>> &data, int row, int column, std::string filepath)
 { 
     std::ofstream output;
     output.open(filepath + ".csv", std::ios::out);
@@ -24,6 +24,37 @@ bool write_csv(vector<vector<int>>data, int row, int column, std::string filepat
             output << data[j][i] << ",";
         }
         output << data[j][column-1]<<"\n";
+    }
+    output.close();
+    return COMPLETED;
+    
+}
+bool write_csv( vector<vector<double>> &data,
+                int row, int column,
+                bool isHeaderExist,vector<string> headers,
+                string filepath)
+{ 
+    std::ofstream output;
+    output.open(filepath + ".csv", std::ios::out);
+    std::cout << "Output file stream opening success. " << std::endl;
+    for(int j = 0; j <= row; j++)
+    {
+        if(j==0)[[unlikely]]// headers
+        {
+            for (int i = 0; i < column - 1; i++)
+            {
+                output<< headers[i]<<",";
+            }
+            output<< headers[column-1] <<"\n";
+        }
+        else[[likely]]
+        {
+            for (int i = 0; i < column - 1; i++)
+            {
+                output << data[j-1][i] << ",";
+            }
+            output << data[j-1][column-1]<<"\n";
+        }
     }
     output.close();
     return COMPLETED;
@@ -101,6 +132,10 @@ encodeHueskenScores (std::string path, vector<vector<int> > &result)
     }
 }
 
+/// @brief Decode clause from trained tsetlin machine, and form a nucleotide weight matrix in size of 8*21
+/// @param original Original trained result extract from tsetlin machine.
+/// @param wordSize Costs of bit in each position of nucleotide, for this implement is 4.
+/// @return A 2d vector, each row represent a type of nucleotide(or its negation).
 vector<vector<int>> 
 decodeSeqs( vector<int> &original, int wordSize)
 {
@@ -110,25 +145,53 @@ decodeSeqs( vector<int> &original, int wordSize)
     {
         int thisWord = i % wordSize;
         int thisPos = i/wordSize;
-        result[thisWord][thisPos] = original[i];        //positive.
-        result[thisWord + wordSize][thisPos] = original[i + original.size()/2]; //negative.
+        result[thisWord][thisPos] = original[i];                                //positive literal.
+        result[thisWord + wordSize][thisPos] = original[i + original.size()/2]; //negative literal(asserting word size is equal to variation of words).
     }
     
     return result;
 
 }
-void modelOutput(   TsetlinMachine::model   &model,
+
+/// @brief Output human interpretable datas to downstream analysis, 
+///        including most determined clauses, average knowledge(by inclusion), average knowledge(by weight)
+/// @param machine Trained tsetlin machine.
+/// @param Precision Precision of this trained model, using this to name the directory.
+/// @param tierTags Tag of each tier, using this to name the sub-directory.
+/// @param outputPath The workspace of this output process.
+void 
+modelOutputStat(    TsetlinMachine::model   &machine,
                     double                  Precision,
                     vector<string>          tierTags,
                     string                  outputPath)
 {
-    int clausePerResponse = model.modelArgs.clausePerOutput; // only represent clause number of a single polarity.
-    int literalNum = model.modelArgs.inputSize; // same as above.
-    int tierNum = model.modelArgs.outputSize;
+    ////////////////Fixed variable due to laziness//////////////
+    int wordSize = 4;
+    ////////////////Fixed variable due to laziness//////////////
+    int clausePerTier = machine.modelArgs.clausePerOutput; // only represent clause number of a single polarity.
+    int literalNum = machine.modelArgs.inputSize; // same as above.
+    int wordNum = literalNum / wordSize;
+    int tierNum = machine.modelArgs.outputSize;
 
-    vector<vector<vector<int>>> positive;       // tierNum * clauseNum * (literalNum*2);
-    vector<vector<vector<int>>> negative;
+    vector<vector<vector<int>>> positive(clausePerTier,
+                                        vector<vector<int>>(2*wordSize,
+                                                            vector<int>(wordNum,0)));       // clausePerTier * (2 * wordsize) * wordnum.
+    vector<vector<vector<int>>> negative(clausePerTier,
+                                        vector<vector<int>>(2*wordSize,
+                                                            vector<int>(wordNum,0)));       // clausePerTier * (2 * wordsize) * wordnum.
+    for (int tier = 0; tier < tierNum; tier++)
+    {
+        for (int clauseIdx = 0; clauseIdx < clausePerTier; clauseIdx++)
+        {
+            positive[clauseIdx] = decodeSeqs(machine.automatas[tier].positiveClauses[clauseIdx].literals,4);
+            negative[clauseIdx] = decodeSeqs(machine.automatas[tier].negativeClauses[clauseIdx].literals,4);
+        }
+        
+    }
+
 }
+
+
 void
 modelOutput (TsetlinMachine::model model,
              double precision,

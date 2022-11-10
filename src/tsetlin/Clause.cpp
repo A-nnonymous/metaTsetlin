@@ -97,8 +97,7 @@ Clause::unpack(vector<__m512i> &original)noexcept
 /// @return Boolean value of the integrity
 bool Clause::modelIntegrityCheck(model &targetModel)
 {
-    bool isRightLength =    (targetModel.positiveLiterals.size() == _literalNum) &&
-                            (targetModel.negativeLiterals.size() == _literalNum);
+    bool isRightLength =    targetModel.literals.size() == 2* _literalNum;
     bool isRightPlace = (targetModel.no == _no);
     return isRightLength && isRightPlace;
 }
@@ -243,15 +242,13 @@ Clause::model Clause::exportModel()
     result.no = _no;
     vector<int> posLitFilled = unpack(_positiveLiteralBlocks);
     vector<int> negLitFilled = unpack(_negativeLiteralBlocks);
-    vector<int> posLiteral(_literalNum, 0);
-    vector<int> negLiteral(_literalNum, 0);
+    vector<int> literals(_literalNum * 2, 0);
     for (int i = 0; i < _literalNum; i++)
     {
-        posLiteral[i] = posLitFilled[i];
-        negLiteral[i] = negLitFilled[i];
+        literals[i] = posLitFilled[i];
+        literals[i+_literalNum] = negLitFilled[i];
     }
-    result.positiveLiterals = posLiteral;
-    result.negativeLiterals = negLiteral;
+    result.literals = literals;
     return result;
 }
 
@@ -262,6 +259,14 @@ void Clause::importModel(model &targetModel)
         std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
         throw; return;
     }
-    _positiveLiteralBlocks = pack(targetModel.positiveLiterals);
-    _negativeLiteralBlocks = pack(targetModel.negativeLiterals);
+    vector<int> pos(_literalNum, 0);
+    vector<int> neg(_literalNum, 0);
+    for (int i = 0; i < _literalNum; i++)
+    {
+        pos[i] = targetModel.literals[i];
+        neg[i] = targetModel.literals[i+_literalNum];
+    }
+    
+    _positiveLiteralBlocks = pack(pos);
+    _negativeLiteralBlocks = pack(neg);
 }

@@ -22,7 +22,11 @@ void encodeHueskenScores(string path,
 
 
 bool write_csv_row(vector<float> data, std::ofstream *output);
-
+bool write_csv(vector<vector<int>> &data, int row, int column, std::string filepath);
+bool write_csv( vector<vector<double>> &data,
+                int row, int column,
+                bool isHeaderExist,vector<string> headers,
+                string filepath);
 
 
 void

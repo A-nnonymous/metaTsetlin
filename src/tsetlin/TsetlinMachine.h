@@ -28,6 +28,7 @@ public:
     {
         MachineArgs             modelArgs;
         vector<Automata::model> automatas;
+        model(){}
     };
     
 

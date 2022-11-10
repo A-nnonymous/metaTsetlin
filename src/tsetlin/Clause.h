@@ -19,8 +19,7 @@ public:
     struct model
     {
         int             no;
-        vector<int> positiveLiterals;
-        vector<int> negativeLiterals;
+        vector<int>     literals;
         model(){}
     };
 
