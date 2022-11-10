@@ -37,23 +37,37 @@ bool write_csv( vector<vector<double>> &data,
     std::ofstream output;
     output.open(filepath + ".csv", std::ios::out);
     std::cout << "Output file stream opening success. " << std::endl;
-    for(int j = 0; j <= row; j++)
+    if(isHeaderExist)
     {
-        if(j==0)[[unlikely]]// headers
+        for(int j = 0; j <= row; j++)
         {
-            for (int i = 0; i < column - 1; i++)
+            if(j==0)[[unlikely]]// headers
             {
-                output<< headers[i]<<",";
+                for (int i = 0; i < column - 1; i++)
+                {
+                    output<< headers[i]<<",";
+                }
+                output<< headers[column-1] <<"\n";
             }
-            output<< headers[column-1] <<"\n";
+            else[[likely]]
+            {
+                for (int i = 0; i < column - 1; i++)
+                {
+                    output << data[j-1][i] << ",";
+                }
+                output << data[j-1][column-1]<<"\n";
+            }
         }
-        else[[likely]]
+    }
+    else
+    {
+        for(int j = 0; j < row; j++)
         {
             for (int i = 0; i < column - 1; i++)
             {
-                output << data[j-1][i] << ",";
+                output << data[j][i] << ",";
             }
-            output << data[j-1][column-1]<<"\n";
+            output << data[j][column-1]<<"\n";
         }
     }
     output.close();
@@ -165,6 +179,8 @@ modelOutputStat(    TsetlinMachine::model   &machine,
                     vector<string>          tierTags,
                     string                  outputPath)
 {
+    if(!outputPath.ends_with("/"))outputPath+="/";
+    std::filesystem::create_directories(outputPath);
     ////////////////Fixed variable due to laziness//////////////
     int wordSize = 4;
     ////////////////Fixed variable due to laziness//////////////
@@ -173,25 +189,42 @@ modelOutputStat(    TsetlinMachine::model   &machine,
     int wordNum = literalNum / wordSize;
     int tierNum = machine.modelArgs.outputSize;
 
-    vector<vector<vector<int>>> positive(clausePerTier,
-                                        vector<vector<int>>(2*wordSize,
-                                                            vector<int>(wordNum,0)));       // clausePerTier * (2 * wordsize) * wordnum.
-    vector<vector<vector<int>>> negative(clausePerTier,
-                                        vector<vector<int>>(2*wordSize,
-                                                            vector<int>(wordNum,0)));       // clausePerTier * (2 * wordsize) * wordnum.
+    vector<vector<double>> posAvgWeight(vector<vector<double>>(2*wordSize,
+                                                            vector<double>(wordNum,0)));   // Averaging weight of each clause.
+    vector<vector<double>> negAvgWeight(vector<vector<double>>(2*wordSize,
+                                                            vector<double>(wordNum,0)));
+    vector<vector<double>> posAvgInc(vector<vector<double>>(2*wordSize,
+                                                            vector<double>(wordNum,0)));   // Averaging weight of each clause.
+    vector<vector<double>> negAvgInc(vector<vector<double>>(2*wordSize,
+                                                            vector<double>(wordNum,0)));
     for (int tier = 0; tier < tierNum; tier++)
     {
         for (int clauseIdx = 0; clauseIdx < clausePerTier; clauseIdx++)
         {
-            positive[clauseIdx] = decodeSeqs(machine.automatas[tier].positiveClauses[clauseIdx].literals,4);
-            negative[clauseIdx] = decodeSeqs(machine.automatas[tier].negativeClauses[clauseIdx].literals,4);
+            auto positive = decodeSeqs(machine.automatas[tier].positiveClauses[clauseIdx].literals,4);
+            auto negative = decodeSeqs(machine.automatas[tier].negativeClauses[clauseIdx].literals,4);
+            for (int nucType = 0; nucType < 2*wordSize ;nucType++)  // Statistic affairs
+            {
+                for (int wordIdx = 0; wordIdx < wordNum; wordIdx++)
+                {
+                    posAvgWeight[nucType][wordIdx] += positive[nucType][wordIdx] / (double)clausePerTier;
+                    negAvgWeight[nucType][wordIdx] += negative[nucType][wordIdx] / (double)clausePerTier;
+                    posAvgInc[nucType][wordIdx] += (positive[nucType][wordIdx]>=0? 0:1) / (double)clausePerTier;
+                    negAvgInc[nucType][wordIdx] += (negative[nucType][wordIdx]>=0? 0:1) / (double)clausePerTier;
+                }
+            }
         }
-        
+        string prefix = outputPath + "/p" + std::to_string(Precision) + "/" + tierTags[tier] +"/";
+        std::filesystem::create_directories(prefix);
+        write_csv(posAvgWeight,2*wordSize,wordNum,false,vector<string>(),prefix + "posAvgWeight");
+        write_csv(negAvgWeight,2*wordSize,wordNum,false,vector<string>(),prefix + "negAvgWeight");
+        write_csv(posAvgInc,2*wordSize,wordNum,false,vector<string>(),prefix + "posAvgInc");
+        write_csv(negAvgInc,2*wordSize,wordNum,false,vector<string>(),prefix + "negAvgInc");
     }
 
 }
 
-
+/*
 void
 modelOutput (TsetlinMachine::model model,
              double precision,
@@ -252,3 +285,4 @@ modelOutput (TsetlinMachine::model model,
     write_csv (wellDoneNegative, clausePerOutput, literalNum,
                     outputpath + "./wellDone_negative_" + std::to_string(precision));
 }
+*/

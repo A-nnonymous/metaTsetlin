@@ -6,6 +6,7 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <filesystem>
 #include "TsetlinMachine.h"
 
 #define COMPLETED true
@@ -29,12 +30,14 @@ bool write_csv( vector<vector<double>> &data,
                 string filepath);
 
 
+/*
 void
 modelOutput (TsetlinMachine::model model,
              double precision,
              std::string outputpath);
-
-void modelOutput(   TsetlinMachine::model   model,
+*/
+void 
+modelOutputStat(    TsetlinMachine::model   &machine,
                     double                  Precision,
                     vector<string>          tierTags,
                     string                  outputPath);

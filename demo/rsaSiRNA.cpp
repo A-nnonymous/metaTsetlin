@@ -131,6 +131,6 @@ int main(int argc, char const *argv[])
     auto RSA = RSAoptimizer<modelAndArgs,tsetlinArgs,int>(N, siRNAdemo,funcArgs,searchArgs);
     modelAndArgs result;
     result = RSA.optimize();
-    modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
+    //modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
     return 0;
 }

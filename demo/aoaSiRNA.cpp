@@ -112,7 +112,7 @@ int main(int argc, char const *argv[])
     // Tsetlin Machine common arguments.
     int             inputSize= 84;
     int             outputSize= 4;
-    int             epochNum = 60;
+    int             epochNum = 1;
     double          dropoutRatio = 0.3;
     tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,100.0f);
 
@@ -121,12 +121,18 @@ int main(int argc, char const *argv[])
     arg.optimizerNum= 94;
     arg.evaluateFunc = siRNAdemo;
     arg.gFuncArgs = funcArgs;
-    arg.iterNum= 50;
+    arg.iterNum= 1;
     arg.lowerBounds= vector<int>{100,20};
-    arg.upperBounds= vector<int>{500, 1500};
+    arg.upperBounds= vector<int>{500, 50000};
     AOAoptimizer<modelAndArgs, tsetlinArgs, int> env(arg);
     modelAndArgs result = env.optimize();
     std::cout<<result.value<<std::endl;
-    modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
+    //modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
+    vector<string> ttag(4);
+    ttag[0] = "low";
+    ttag[1] = "mediumLow";
+    ttag[2] = "mediumHigh";
+    ttag[3] = "high";
+    modelOutputStat(result.model,result.value,ttag,"/home/output/");
     return 0;
 }
