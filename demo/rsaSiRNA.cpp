@@ -33,9 +33,10 @@ struct tsetlinArgs
     int epochNum;
     double sLow;
     double sHigh;
+    dataset data;
     vector<int> vars;   // clausePerOutput and T become the variable.
     tsetlinArgs(){}
-    tsetlinArgs( double dor, int is, int os,int epo, double sl, double sh )
+    tsetlinArgs( double dor, int is, int os,int epo, double sl, double sh ,dataset indata)
     {
         epochNum = epo;
         dropoutRatio = dor;
@@ -43,6 +44,7 @@ struct tsetlinArgs
         outputSize = os;
         sLow = sl;
         sHigh = sh;
+        data = indata;
         vars.resize(2,0);
     }
 };
@@ -50,6 +52,7 @@ struct tsetlinArgs
 
 modelAndArgs siRNAdemo(tsetlinArgs funcArgs)
 {
+    /*
     int                             train_data_size = 1229;
     int                             test_data_size = 139;
     double                          dropoutRatio = 0.5;
@@ -76,7 +79,25 @@ modelAndArgs siRNAdemo(tsetlinArgs funcArgs)
     mArgs.sLow = 2.0f;
     mArgs.sHigh = 100.0f;
     TsetlinMachine tm(mArgs);
-    
+    */
+    vector<vector<int>> train_seqs = funcArgs.data.trainData;
+    vector<vector<int>> train_scores= funcArgs.data.trainResponse;
+    vector<vector<int>> test_seqs = funcArgs.data.testData;
+    vector<vector<int>> test_scores= funcArgs.data.testResponse;
+    int test_data_size = test_seqs.size();
+
+
+    TsetlinMachine::model       bestModel;
+    double                      bestPrecision = 0;
+    TsetlinMachine::MachineArgs mArgs;
+    mArgs.clausePerOutput = funcArgs.vars[0];
+    mArgs.T = funcArgs.vars[1];
+    mArgs.dropoutRatio = funcArgs.dropoutRatio;
+    mArgs.inputSize = funcArgs.inputSize;
+    mArgs.outputSize = funcArgs.outputSize;
+    mArgs.sLow = funcArgs.sLow;
+    mArgs.sHigh = funcArgs.sHigh;
+    TsetlinMachine tm(mArgs);
     tm.load(train_seqs,train_scores);
     for (int i = 0; i < funcArgs.epochNum; i++)
     {
@@ -109,22 +130,27 @@ modelAndArgs siRNAdemo(tsetlinArgs funcArgs)
 
 int main(int argc, char const *argv[])
 {
+    double          trainRatio = 0.9;
+    int             classNum = 2;
+    vector<string>  seqs = readcsvline<string>("/home/data/siRNA/e2sall/e2sIncSeqs.csv");
+    vector<double>  res = readcsvline<double>("/home/data/siRNA/e2sall/e2sIncResponse.csv");
+    dataset data = prepareData(seqs,res,trainRatio,classNum);
     // Tsetlin Machine common arguments.
-    int             inputSize= 84;
-    int             outputSize= 4;
+    int             inputSize= data.testData[0].size();
+    int             outputSize= classNum;
     int             epochNum = 60;
-    double          dropoutRatio = 0.3;
-    tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,100.0f);
+    double          dropoutRatio = 0.5;
+    tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,50.0f, data);
 
     // RSA algorithm arguments;
     int             N = 94;     // Number of individual optimizer.
     int             dimNum = 2;
-    int             maxIter = 50;
+    int             maxIter = 100;
     double          alpha = 0.1;
     double          beta = 0.005;
 
-    vector<int> mins{100, 80};
-    vector<int> maxes{500, 1500};
+    vector<int> mins{100, 50};
+    vector<int> maxes{500, 5000};
     auto limits = Predator<modelAndArgs,tsetlinArgs,int>::rangeLimits(mins,maxes);
     auto searchArgs = Predator<modelAndArgs,tsetlinArgs,int>::searchArgs(dimNum,maxIter,alpha,beta,limits);
     
@@ -132,5 +158,9 @@ int main(int argc, char const *argv[])
     modelAndArgs result;
     result = RSA.optimize();
     //modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
+    vector<string> ttag(2);
+    ttag[0] = "low";
+    ttag[1] = "high";
+    modelOutputStat(result.model,result.value,ttag,"/home/output/");
     return 0;
 }
