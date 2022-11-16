@@ -112,8 +112,8 @@ int main(int argc, char const *argv[])
     int             inputSize= 84;
     int             outputSize= 2;
     int             epochNum = 60;
-    double          dropoutRatio = 0.3;
-    tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,4.0f,200.0f,data);
+    double          dropoutRatio = 0.5;
+    tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,200.0f,data);
 
     AOAoptimizer<modelAndArgs, tsetlinArgs, int>::args arg;
     arg.dimensionNum = 2;
@@ -131,5 +131,6 @@ int main(int argc, char const *argv[])
     ttag[0] = "low";
     ttag[1] = "high";
     outputModelStat(result.model,result.value,ttag,"/home/output/");
+    outputModelPattern(result.model,result.value,ttag,"/home/output/");
     return 0;
 }
