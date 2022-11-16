@@ -1,6 +1,8 @@
 #include "io.h"
 using std::vector;
 using std::string;
+
+
 bool
 write_csv_row (vector<float> data, std::ofstream *output)
 {
@@ -12,7 +14,8 @@ write_csv_row (vector<float> data, std::ofstream *output)
     (*output) << data[i] << "\n";
     return COMPLETED;
 }
-bool write_csv(vector<vector<int>> &data, int row, int column, std::string filepath)
+
+bool write_csv(vector<vector<int>> &data, int row, int column, std::string filepath)[[deprecated]]
 { 
     std::ofstream output;
     output.open(filepath + ".csv", std::ios::out);
@@ -36,51 +39,9 @@ bool write_csv(vector<vector<int>> &data, int row, int column, std::string filep
     return COMPLETED;
     
 }
-bool write_csv( vector<vector<double>> &data,
-                int row, int column,
-                bool isHeaderExist,vector<string> headers,
-                string filepath)
-{ 
-    std::ofstream output;
-    output.open(filepath + ".csv", std::ios::out);
-    //std::cout << "Output file stream opening success. " << std::endl;
-    if(isHeaderExist)
-    {
-        for(int j = 0; j <= row; j++)
-        {
-            if(j==0)[[unlikely]]// headers
-            {
-                for (int i = 0; i < column - 1; i++)
-                {
-                    output<< headers[i]<<",";
-                }
-                output<< headers[column-1] <<"\n";
-            }
-            else[[likely]]
-            {
-                for (int i = 0; i < column - 1; i++)
-                {
-                    output << data[j-1][i] << ",";
-                }
-                output << data[j-1][column-1]<<"\n";
-            }
-        }
-    }
-    else
-    {
-        for(int j = 0; j < row; j++)
-        {
-            for (int i = 0; i < column - 1; i++)
-            {
-                output << data[j][i] << ",";
-            }
-            output << data[j][column-1]<<"\n";
-        }
-    }
-    output.close();
-    return COMPLETED;
-    
-}
+
+
+
 vector<int>
 siRNA2SIG (std::string raw_string)
 {
@@ -91,35 +52,121 @@ siRNA2SIG (std::string raw_string)
       switch (c)
         {
         case 'A':
-          result.insert (result.end (), { 1, 0, 0, 0 });
-          break;
+            result.insert (result.end (), { 1, 0, 0, 0 });
+            break;
         case 'U':
-          result.insert (result.end (), { 0, 1, 0, 0 });
-          break;
+            result.insert (result.end (), { 0, 1, 0, 0 });
+            break;
         case 'C':
-          result.insert (result.end (), { 0, 0, 1, 0 });
-          break;
+            result.insert (result.end (), { 0, 0, 1, 0 });
+            break;
         case 'G':
-          result.insert (result.end (), { 0, 0, 0, 1 });
-          break;
+            result.insert (result.end (), { 0, 0, 0, 1 });
+            break;
         case 'a':
-          result.insert (result.end (), { 1, 0, 0, 0 });
-          break;
+            result.insert (result.end (), { 1, 0, 0, 0 });
+            break;
         case 't':
-          result.insert (result.end (), { 0, 1, 0, 0 });
-          break;
+            result.insert (result.end (), { 0, 1, 0, 0 });
+            break;
         case 'c':
-          result.insert (result.end (), { 0, 0, 1, 0 });
-          break;
+            result.insert (result.end (), { 0, 0, 1, 0 });
+            break;
         case 'g':
-          result.insert (result.end (), { 0, 0, 0, 1 });
-          break;
+            result.insert (result.end (), { 0, 0, 0, 1 });
+            break;
         default: // Not expected other characters.
-          break;
+            break;
         }
     }
   return result;
 }
+
+/// @brief Transform tsetlin clauses into siRNA pattern clauses, appended with pattern's value.
+/// @param signal Trained tsetlin clause contain a vector of int.
+/// @return A pattern string with value.
+pattern
+clause2Pattern(vector<int> signal)
+{
+    string sequence;
+    pattern result;
+
+    if(signal.size()%4 != 0)
+    {
+        std::cout<< "Invalid signal length for transformation"<<std::endl;
+        return result;
+    }
+    int validLiteral = 0;
+    long voice =0;
+    for (int p = 0; p < signal.size()/2; p+=4)
+    {
+        int pFlag=0, nFlag=0, flag;
+        bool isP;
+        for(int i=0; i< 4; i++)
+        {
+            pFlag += (1<<i) * (signal[p + i] >= 0);
+            nFlag += (1<<i) * (signal[p + signal.size()/2 + i] >= 0);
+            voice += abs(signal[p + i]) + abs(signal[p + signal.size()/2 + i]);
+        }
+        if((pFlag!=0) && (nFlag!=0)) return result;
+        isP = (pFlag == 0)? false:true;
+        flag = (isP)? pFlag: nFlag;
+        switch(flag)
+        {
+            case 0:[[likely]]   // sparse pattern, maybe.
+                sequence += "_";  // for those literal that deactivated.
+                break;
+            case 1:
+                if(isP)
+                {
+                    sequence += "A";
+                }
+                else
+                {
+                    sequence += "W"; // 'W' represent "!A", same a below.
+                }
+                break;
+            case 2:
+                if(isP)
+                {
+                    sequence += "U";
+                }
+                else
+                {
+                    sequence += "X"; 
+                }
+                break;
+            case 4:
+                if(isP)
+                {
+                    sequence += "C";
+                }
+                else
+                {
+                    sequence += "Y";
+                }
+                break;
+            case 8:
+                if(isP)
+                {
+                    sequence += "G";
+                }
+                else
+                {
+                    sequence += "Z"; 
+                }
+                break;
+            default:
+                return pattern();// Invalid clause because contain impossible literal.
+        }
+        if(flag != 0)validLiteral++; // valid literal counter.
+    }
+    double value = (validLiteral / (double)(signal.size()/4)) * voice; // valid literal ratio multiply to voice.
+    result.value = value;
+    result.sequence = sequence;
+    return result;
+}
+
 void
 encodeHueskenSeqs (std::string path, vector<vector<int> > &result)
 {
@@ -281,7 +328,7 @@ decodeSeqs( vector<int> &original, int wordSize)
 /// @param tierTags Tag of each tier, using this to name the sub-directory.
 /// @param outputPath The workspace of this output process.
 void 
-modelOutputStat(    TsetlinMachine::model   &machine,
+outputModelStat(    TsetlinMachine::model   &machine,
                     double                  Precision,
                     vector<string>          tierTags,
                     string                  outputPath)
@@ -323,31 +370,84 @@ modelOutputStat(    TsetlinMachine::model   &machine,
         }
         string prefix = outputPath + "/prec" + std::to_string(Precision) + "/" + tierTags[tier] +"/";
         std::filesystem::create_directories(prefix);
-        write_csv(posAvgWeight,2*wordSize,wordNum,false,vector<string>(),prefix + "posAvgWeight");
-        write_csv(negAvgWeight,2*wordSize,wordNum,false,vector<string>(),prefix + "negAvgWeight");
-        write_csv(posAvgInc,2*wordSize,wordNum,false,vector<string>(),prefix + "posAvgInc");
-        write_csv(negAvgInc,2*wordSize,wordNum,false,vector<string>(),prefix + "negAvgInc");
+        write_csv<double>(posAvgWeight,2*wordSize,wordNum,false,vector<string>(),prefix + "posAvgWeight");
+        write_csv<double>(negAvgWeight,2*wordSize,wordNum,false,vector<string>(),prefix + "negAvgWeight");
+        write_csv<double>(posAvgInc,2*wordSize,wordNum,false,vector<string>(),prefix + "posAvgInc");
+        write_csv<double>(negAvgInc,2*wordSize,wordNum,false,vector<string>(),prefix + "negAvgInc");
     }
-
 }
 
-/// @brief Output weight vectors that can be reused by tsetlin machine
-/// @param model Target data structure that meaned to export
-/// @param precision Performance of this model
-/// @param outputpath Directory of output files.
-void
-TMmodelExport(TsetlinMachine::model model,
-             double precision,
-             std::string outputpath)
+/// @brief Decode and output all legal clauses(this interpretion use only in Huesken dataset).
+/// @param machine Target tsetlin machine model.
+/// @param outputPath Path that store pattern data csv files.
+void outputModelPattern(TsetlinMachine::model   &machine,
+                        double                  precision,
+                        vector<string>          tierTags,
+                        string                  outputPath)
 {
+    if(!outputPath.ends_with("/"))outputPath+="/";
+    std::filesystem::create_directories(outputPath);
+    ////////////////Fixed variable due to laziness//////////////
+    int wordSize = 4;
+    ////////////////Fixed variable due to laziness//////////////
+    int clausePerTier = machine.modelArgs.clausePerOutput; // only represent clause number of a single polarity.
+    int literalNum = machine.modelArgs.inputSize; // same as above.
+    int wordNum = literalNum / wordSize;
+    int tierNum = machine.modelArgs.outputSize;
 
+    for (int tier = 0; tier < tierNum; tier++)
+    {
+        //vector<vector<string>> positiveClauses(clausePerTier, vector<string>(2, string())); //Initialize empty strings for clauses.
+        //vector<vector<string>> negativeClauses(clausePerTier, vector<string>(2, string()));
+        vector<vector<string>> positiveClauses; //Initialize empty strings for clauses.
+        vector<vector<string>> negativeClauses;
+        
+        for (int clauseIdx = 0; clauseIdx < clausePerTier; clauseIdx++)
+        {
+            vector<string> positive(2);
+            vector<string> negative(2);
+            pattern positivePattern = clause2Pattern(machine.automatas[tier].positiveClauses[clauseIdx].literals);
+            pattern negativePattern = clause2Pattern(machine.automatas[tier].negativeClauses[clauseIdx].literals);
+            if(!positivePattern.sequence.empty())
+            {
+                //positiveClauses[clauseIdx][0] = positivePattern.sequence;
+                //positiveClauses[clauseIdx][1] = std::to_string(positivePattern.value);
+                positive[0] = positivePattern.sequence;
+                positive[1] = std::to_string(positivePattern.value);
+                positiveClauses.push_back(positive);
+            }
+            if(!negativePattern.sequence.empty())
+            {
+                //negativeClauses[clauseIdx][0] = negativePattern.sequence;
+                //negativeClauses[clauseIdx][1] = std::to_string(negativePattern.value);
+                negative[0] = negativePattern.sequence;
+                negative[1] = std::to_string(negativePattern.value);
+                negativeClauses.push_back(negative);
+            }
+        }
+        string prefix = outputPath + "/prec" + std::to_string(precision) + "/" + tierTags[tier] +"/";
+        std::filesystem::create_directories(prefix);
+        write_csv<string>(positiveClauses,positiveClauses.size(),2,false,vector<string>(),prefix + "posPattern");
+        write_csv<string>(negativeClauses,negativeClauses.size(),2,false,vector<string>(),prefix + "negPattern");
+    }
 }
 
-/// @brief Build and return a tsetlin machine according to existing model file.
-/// @param modelPath 
-/// @return 
-TsetlinMachine
-TMbuildFromModel(string modelPath)
+/// @brief Save Tsetlin machine model in binary format.
+/// @param machine Target model.
+/// @param outputPath Path of output file.
+void saveModel( TsetlinMachine::model   &machine,
+                string                  outputPath)
 {
-    
+    write_binary<TsetlinMachine::model>(&machine,1,outputPath);
 }
+
+/// @brief Load Tsetlin machine model from binary model file.
+/// @param modelPath Path of model file.
+/// @return A structured model of Tsetlin machine.
+TsetlinMachine::model loadModel(string modelPath)
+{
+    TsetlinMachine::model result;
+    read_binary<TsetlinMachine::model>(modelPath, &result);
+    return result;
+}
+

@@ -254,7 +254,7 @@ Clause::model Clause::exportModel()
 
 void Clause::importModel(model &targetModel)
 {
-    if(!modelIntegrityCheck(targetModel))[[unlikely]]
+    if(!Clause::modelIntegrityCheck(targetModel))[[unlikely]]
     {
         std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
         throw; return;

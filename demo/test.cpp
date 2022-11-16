@@ -72,7 +72,9 @@ int main(int argc, char const *argv[])
     vector<string> ttag(4);
     ttag[0] = "low";
     ttag[1] = "high";
-    modelOutputStat(model,precision,ttag,"/home/output/");
+    //outputModelStat(model,precision,ttag,"/home/output/");
+    outputModelStat(model,precision,ttag,"./");
+    outputModelPattern(model, precision,ttag,"./");
     
     return 0;
 }

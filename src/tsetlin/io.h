@@ -15,7 +15,7 @@
 #define FAILED false
 using std::vector;
 using std::string;
-vector<int> siRNA2SIG(string raw_string);
+
 
 // TODO: Balance size of each class, add shuffle.
 struct dataset
@@ -34,6 +34,21 @@ struct dataset
     dataset(){}
 };
 
+struct pattern
+{
+    string sequence;
+    double value;
+    pattern operator=(pattern other)
+    {
+        this->sequence = other.sequence;
+        this->value = other.value;
+        return *this;
+    }
+};
+
+vector<int> siRNA2SIG(string raw_string);
+
+pattern clause2Pattern(vector<int> signal);
 
 void encodeHueskenSeqs(string path, 
                         vector<vector<int>> &result);
@@ -58,6 +73,7 @@ vector<Dtype> readcsvline(string path)
     }
     return result;
 }
+
 vector<int> getDiscreteResponse(vector<double> threshold, double raw);
 dataset prepareData(vector<string> &seqs,vector<double> &responses, double trainRatio, int classes);
 
@@ -68,15 +84,125 @@ bool write_csv( vector<vector<double>> &data,
                 bool isHeaderExist,vector<string> headers,
                 string filepath);
 
+// TODO: Output model in binary and load in binary, also implement a transform function to csv.
+//       output all clause 
 
-/*
-void
-modelOutput (TsetlinMachine::model model,
-             double precision,
-             std::string outputpath);
-*/
-void 
-modelOutputStat(    TsetlinMachine::model   &machine,
+// Model IO(deprecated)
+void saveModel( TsetlinMachine::model   &mahchine,
+                string                  outputPath);
+
+TsetlinMachine::model loadModel(string modelPath);
+
+// Model Interpreting
+void outputModelStat(TsetlinMachine::model  &machine,
                     double                  Precision,
                     vector<string>          tierTags,
                     string                  outputPath);
+
+void outputModelPattern(TsetlinMachine::model   &machine,
+                        double                  precision,
+                        vector<string>          tierTags,
+                        string                  outputPath);
+template<typename T>
+bool write_csv( vector<vector<T>> &data,
+                int row, int column,
+                bool isHeaderExist,vector<string> headers,
+                string filepath)
+{ 
+    std::ofstream output;
+    output.open(filepath + ".csv", std::ios::out);
+    //std::cout << "Output file stream opening success. " << std::endl;
+    if(isHeaderExist) // Exist user-defined header.
+    {
+        for(int j = 0; j <= row; j++)
+        {
+            if(j==0)[[unlikely]]// headers
+            {
+                for (int i = 0; i < column - 1; i++)
+                {
+                    output<< headers[i]<<",";
+                }
+                output<< headers[column-1] <<"\n";
+            }
+            else[[likely]]
+            {
+                for (int i = 0; i < column - 1; i++)
+                {
+                    output << data[j-1][i] << ",";
+                }
+                
+                if(j!=row)[[likely]]
+                {
+                    output << data[j-1][column-1]<<"\n";
+                }
+                else[[unlikely]] // last row of data, without endline.
+                {
+                    output << data[j-1][column-1];
+                }
+            }
+        }
+    }
+    else
+    {
+        for(int j = 0; j < row; j++)
+        {
+            for (int i = 0; i < column - 1; i++)
+            {
+                output << data[j][i] << ",";
+            }
+
+            if(j!=(row-1))[[likely]]
+            {
+                output << data[j][column-1]<<"\n";
+            }
+            else[[unlikely]] // last row of data, without endline.
+            {
+                output << data[j][column-1];
+            }
+        }
+    }
+    output.close();
+    return COMPLETED;
+}
+
+/// @brief Write specified data structure(or structure array) into binary file
+/// @tparam dtype Data type of single instance of data.
+/// @param data Pointer to target data.
+/// @param length If output array of structure, this represent instance number in this array.
+/// @param filepath Output file path.
+template<typename dtype>
+void write_binary(dtype *data, int length, std::string filepath)
+{
+    std::cout.precision(2);
+    std::stringstream sstream;
+    std::ofstream output;
+    size_t byteNum = length * sizeof(dtype);
+    std::cout << "=======================" << "\n";
+    output.open(filepath, std::ios::out |std::ios::binary);
+    std::cout << "Output file stream for " << filepath << " is successfully opened. " << "\n";
+    std::cout << "Estimated storage usage: " << std::fixed << byteNum / (double)(1024 * 1024) << "MB" << "\n";
+
+    std::cout << "Start to output......" << "\n";
+    output.write((char*)data, byteNum);
+    output.close();
+    std::cout << "Output for " << filepath << " is completed. " << "\n";
+    std::cout << "\n";
+}
+
+/// @brief Read binary file into specified data structure(or structure array)
+/// @tparam dtype Data type of single instance of data.
+/// @param filepath Output file path.
+/// @param outside_array_pointer Pointer provided by caller of this function, must allocated space already.
+template<typename dtype>
+void read_binary(std::string filepath, dtype* outside_array_pointer)
+{
+    std::ifstream fastseek(filepath, std::ios::binary | std::ios::ate);
+    size_t byteNum = fastseek.tellg();
+    fastseek.close();
+    std::cout << "The currently reading file costs " << byteNum<< " bytes of memory.\n";
+
+    std::ifstream bin;
+    bin.open(filepath, std::ios::in | std::ios::binary);
+    bin.read((char *)outside_array_pointer, byteNum);
+
+}

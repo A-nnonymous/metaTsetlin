@@ -50,7 +50,7 @@ private:
 
     int     forward(vector<__m512i> &datavec);
     void    backward(int &response);
-    bool    modelIntegrityCheck(model targetModel);
+    bool    modelIntegrityCheck(model &targetModel);
 public:
     Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target);
 

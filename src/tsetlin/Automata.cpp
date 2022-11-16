@@ -94,7 +94,7 @@ void Automata::backward(int &response)
 /// @brief Check the integrety of target model.
 /// @param targetModel Input model.
 /// @return Result of this check.
-bool Automata::modelIntegrityCheck(model targetModel)
+bool Automata::modelIntegrityCheck(model &targetModel)
 {
     bool isRightLength =    (targetModel.negativeClauses.size() == _clauseNum) &&
                             (targetModel.positiveClauses.size() == _clauseNum);
@@ -150,7 +150,7 @@ Automata::model Automata::exportModel()
 
 void Automata::importModel(model &targetModel)
 {
-    if(!modelIntegrityCheck(targetModel))
+    if(!Automata::modelIntegrityCheck(targetModel))
     {
         std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
         throw; return;

@@ -161,6 +161,6 @@ int main(int argc, char const *argv[])
     vector<string> ttag(2);
     ttag[0] = "low";
     ttag[1] = "high";
-    modelOutputStat(result.model,result.value,ttag,"/home/output/");
+    outputModelStat(result.model,result.value,ttag,"/home/output/");
     return 0;
 }

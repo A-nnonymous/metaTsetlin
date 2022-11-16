@@ -1,5 +1,6 @@
 #include "TsetlinMachine.h"
 #include <thread>
+
 TsetlinMachine::TsetlinMachine( MachineArgs args):
 _inputSize(args.inputSize),
 _outputSize(args.outputSize),
@@ -26,6 +27,32 @@ _myArgs(args)
     }
     
 }
+TsetlinMachine::TsetlinMachine( TsetlinMachine::model &savedModel):
+_inputSize(savedModel.modelArgs.inputSize),
+_outputSize(savedModel.modelArgs.outputSize),
+_clausePerOutput(savedModel.modelArgs.clausePerOutput),
+_T(savedModel.modelArgs.T),
+_sLow(savedModel.modelArgs.sLow), _sHigh(savedModel.modelArgs.sHigh),
+_dropoutRatio(savedModel.modelArgs.dropoutRatio),
+_myArgs(savedModel.modelArgs)
+{
+    Automata::AutomataArgs aArgs;
+    aArgs.clauseNum = _clausePerOutput;
+    aArgs.dropoutRatio = _dropoutRatio;
+    aArgs.inputSize = _inputSize;
+    aArgs.sLow = _sLow;
+    aArgs.sHigh = _sHigh;
+    aArgs.T = _T;
+    _response.resize(_outputSize, vector<int>(1,0));    // Set dummy zero response as placeholder.
+    for (int i = 0; i < _outputSize; i++)
+    {
+        aArgs.no = i;
+        Automata thisAutomata(aArgs,_sharedData,_response[i]);
+        _automatas.push_back(thisAutomata);
+    }
+    importModel(savedModel);
+    
+}
 
 /// @brief Check model integrity before importing
 /// @param targetModel Model that user intend to import
@@ -34,7 +61,9 @@ bool
 TsetlinMachine::modelIntegrityCheck(model &targetModel)
 {
     bool isRightArgument =  (targetModel.modelArgs == _myArgs);
-    return isRightArgument;
+    bool isRightAutomatas = (targetModel.automatas.size() == _outputSize);
+    
+    return isRightArgument && isRightAutomatas;
 }
 
 /// @brief Check the integrity of argument 'data'.
@@ -131,7 +160,7 @@ TsetlinMachine::pack(vector<int> &original)
 void
 TsetlinMachine::importModel(model &targetModel)
 {
-    if(!modelIntegrityCheck(targetModel))
+    if(!TsetlinMachine::modelIntegrityCheck(targetModel))
     {
         std::cout<<"Your Tsetlin Machine model failed integrity check!"<<std::endl;
         throw; return;

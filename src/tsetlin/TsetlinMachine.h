@@ -2,6 +2,7 @@
 #include "Automata.h"
 using std::vector;
 
+// TODO: Add boost::serialization to export full model
 class TsetlinMachine{
 public:
     struct MachineArgs
@@ -53,6 +54,7 @@ private:
     vector<__m512i>     pack(vector<int> &original);
 public:
     TsetlinMachine( MachineArgs args);
+    TsetlinMachine( model &savedModel);
 
     void                load(   vector<vector<int>> &data,
                                 vector<vector<int>> &response);

@@ -79,7 +79,7 @@ int main()
     }
     header[input_size] = "score";
     
-    write_csv(train, train_data_size,input_size+1,true, header, "./train");
-    write_csv(test, test_data_size,input_size+1,true, header, "./test");
+    //write_csv<int>(train, train_data_size,input_size+1,true, header, "./train");
+    //write_csv<int>(test, test_data_size,input_size+1,true, header, "./test");
 
 }
