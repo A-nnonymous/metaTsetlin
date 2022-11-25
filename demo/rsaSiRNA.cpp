@@ -2,6 +2,7 @@
 #include "io.h"
 #include <climits>
 #include "RSAoptimizer.h"
+#include "nucleotides.h"
 using std::vector;
 
 struct modelAndArgs

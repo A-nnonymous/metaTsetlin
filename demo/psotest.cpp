@@ -1,6 +1,6 @@
 #include "PSOoptimizer.h"
 #include <climits>
-
+#include "nucleotides.h"
 struct valueWithID
 {
     double value;

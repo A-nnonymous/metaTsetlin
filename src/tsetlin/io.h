@@ -17,7 +17,8 @@ using std::vector;
 using std::string;
 
 
-// TODO: Balance size of each class, add shuffle.
+// data is merely a vector of int concatenated by sequence and it`s additional features.
+
 struct dataset
 {
     //////////METADATA///////////////
@@ -34,27 +35,41 @@ struct dataset
     dataset(){}
 };
 
-struct pattern
+
+template<typename T>
+vector<T> getFairThreshold(vector<T> &original, int pieces)
 {
-    string sequence;
-    double value;
-    pattern operator=(pattern other)
+    vector<T> result(pieces-1,0);
+    vector<T> cutReady;
+    if(pieces <= 1)     // Invalid orphand
     {
-        this->sequence = other.sequence;
-        this->value = other.value;
-        return *this;
+        std::cout<<"invalid piece number"<<std::endl;
+        return result;
     }
-};
+    if(!std::is_sorted(original.begin(),original.end())) // Unsorted original.
+    {
+        cutReady = original;
+        std::sort(cutReady.begin(),cutReady.end());
+    }
+    else
+    {
+        cutReady = original;
+    }
+    
+    size_t originLen = original.size();
+    int ration = originLen / pieces;
+    int remain = originLen % pieces;
 
-vector<int> siRNA2SIG(string raw_string);
+    int end = 0;
+    for(int cut = 0; cut < pieces- 1; cut++)
+    {
+        end += (remain>0)? (ration + !!(remain--)) : ration;
+        result[cut] = cutReady[end];
+    }
+    return result;
+}
 
-pattern clause2Pattern(vector<int> signal);
 
-void encodeHueskenSeqs(string path, 
-                        vector<vector<int>> &result);
-
-void encodeHueskenScores(string path, 
-                          vector<vector<int>> &result);
 
 template<typename Dtype>
 vector<Dtype> readcsvline(string path)
@@ -75,7 +90,6 @@ vector<Dtype> readcsvline(string path)
 }
 
 vector<int> getDiscreteResponse(vector<double> threshold, double raw);
-dataset prepareData(vector<string> &seqs,vector<double> &responses, double trainRatio, int classes);
 
 bool write_csv_row(vector<float> data, std::ofstream *output);
 bool write_csv(vector<vector<int>> &data, int row, int column, std::string filepath);
@@ -93,16 +107,6 @@ void saveModel( TsetlinMachine::model   &mahchine,
 
 TsetlinMachine::model loadModel(string modelPath);
 
-// Model Interpreting
-void outputModelStat(TsetlinMachine::model  &machine,
-                    double                  Precision,
-                    vector<string>          tierTags,
-                    string                  outputPath);
-
-void outputModelPattern(TsetlinMachine::model   &machine,
-                        double                  precision,
-                        vector<string>          tierTags,
-                        string                  outputPath);
 template<typename T>
 bool write_csv( vector<vector<T>> &data,
                 int row, int column,

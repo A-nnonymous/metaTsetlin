@@ -1,5 +1,6 @@
 #include "TsetlinMachine.h"
 #include "io.h"
+#include "nucleotides.h"
 using std::vector;
 
 int main(int argc, char const *argv[])
@@ -8,7 +9,6 @@ int main(int argc, char const *argv[])
     int                             train_data_size;
     int                             test_data_size;
     int                             output_size;
-    int                             input_size = 84;
     int                             clausePerOutput = 500;      // Only represent the number of clauses that have same polarity.
     double                          dropoutRatio = 0.5;
 
@@ -34,11 +34,12 @@ int main(int argc, char const *argv[])
     TsetlinMachine::MachineArgs mArgs;
     mArgs.clausePerOutput = clausePerOutput;
     mArgs.dropoutRatio = dropoutRatio;
-    mArgs.inputSize = input_size;
+    mArgs.inputSize = train_seqs[0].size();
+    std::cout<< "training data consume "<<mArgs.inputSize << " int32 each"<<std::endl;
     mArgs.outputSize = output_size;
     mArgs.sLow = 2.0f;
     mArgs.sHigh = 100.0f;
-    mArgs.T = 1000;
+    mArgs.T = 500;
     TsetlinMachine tm(mArgs);
     
     tm.load(train_seqs,train_scores);
@@ -73,8 +74,8 @@ int main(int argc, char const *argv[])
     ttag[0] = "low";
     ttag[1] = "high";
     //outputModelStat(model,precision,ttag,"/home/output/");
-    outputModelStat(model,precision,ttag,"./");
-    outputModelPattern(model, precision,ttag,"./");
+    //outputModelStat(model,precision,ttag,"./"); /////////////deprecated
+    //outputModelPattern(model, precision,ttag,"./"); ///////////deprecated
     
     return 0;
 }

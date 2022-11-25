@@ -2,6 +2,7 @@
 #include "io.h"
 #include <iostream>
 #include <time.h>
+#include "nucleotides.h"
 using std::vector;
 vector<vector<int>> transpose(vector<vector<int>> original)
 {

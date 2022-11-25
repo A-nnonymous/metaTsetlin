@@ -1,5 +1,5 @@
 #include "io.h"
-
+#include "nucleotides.h"
 using std::vector;
 using std::string;
 int main()

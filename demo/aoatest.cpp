@@ -1,4 +1,5 @@
 #include "AOAoptimizer.h"
+#include "nucleotides.h"
 #include <climits>
 
 struct valueWithID

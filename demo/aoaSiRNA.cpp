@@ -1,5 +1,6 @@
 #include "TsetlinMachine.h"
 #include "io.h"
+#include "nucleotides.h"
 #include <climits>
 #include "AOAoptimizer.h"
 using std::vector;
@@ -109,7 +110,7 @@ int main(int argc, char const *argv[])
     vector<double> res = readcsvline<double>("/home/data/siRNA/e2sall/e2sIncResponse.csv");
     dataset data = prepareData(seqs,res,trainRatio,classNum);
     // Tsetlin Machine common arguments.
-    int             inputSize= 84;
+    int             inputSize= data.trainData[0].size();
     int             outputSize= 2;
     int             epochNum = 60;
     double          dropoutRatio = 0.5;
@@ -130,7 +131,7 @@ int main(int argc, char const *argv[])
     vector<string> ttag(2);
     ttag[0] = "low";
     ttag[1] = "high";
-    outputModelStat(result.model,result.value,ttag,"/home/output/");
-    outputModelPattern(result.model,result.value,ttag,"/home/output/");
+    //outputModelStat(result.model,result.value,ttag,"/home/output/");
+    //outputModelPattern(result.model,result.value,ttag,"/home/output/");
     return 0;
 }

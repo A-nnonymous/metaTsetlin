@@ -112,8 +112,8 @@ int Clause::vote(vector<__m512i> &in)noexcept
     
     for (int i = 0; i < _blockNum; i++)           // Run once per data input.
     {
-        _posInclusionMaskBlocks[i] = _mm512_cmpgt_epi32_mask(_positiveLiteralBlocks[i], _zeros);
-        _negInclusionMaskBlocks[i] = _mm512_cmpgt_epi32_mask(_negativeLiteralBlocks[i], _zeros);
+        _posInclusionMaskBlocks[i] = _mm512_cmpge_epi32_mask(_positiveLiteralBlocks[i], _zeros);
+        _negInclusionMaskBlocks[i] = _mm512_cmpge_epi32_mask(_negativeLiteralBlocks[i], _zeros);
         _inputMaskBlocks[i] = _mm512_cmpgt_epi32_mask(in[i], _zeros);                // Greater than zero (only possible value is one)
 
         _posExclusionMaskBlocks[i] = _knot_mask16(_posInclusionMaskBlocks[i]);

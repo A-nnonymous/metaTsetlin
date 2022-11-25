@@ -1,5 +1,6 @@
 #include "RSAoptimizer.h"
 #include <climits>
+#include "nucleotides.h"
 
 /// @brief Correlated to template argument "output", must contain member "value"
 struct utility
