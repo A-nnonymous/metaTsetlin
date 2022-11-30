@@ -106,8 +106,8 @@ int main(int argc, char const *argv[])
 {
     double trainRatio = 0.9;
     int classNum = 2;
-    vector<string> seqs = readcsvline<string>("/home/data/siRNA/e2sall/e2sIncSeqs.csv");
-    vector<double> res = readcsvline<double>("/home/data/siRNA/e2sall/e2sIncResponse.csv");
+    vector<string> seqs = readcsvline<string>("../data/siRNA/e2sall/e2sIncSeqs.csv");
+    vector<double> res = readcsvline<double>("../data/siRNA/e2sall/e2sIncResponse.csv");
     dataset data = prepareData(seqs,res,trainRatio,classNum);
     // Tsetlin Machine common arguments.
     int             inputSize= data.trainData[0].size();
