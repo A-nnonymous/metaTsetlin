@@ -2,7 +2,7 @@
 #include <thread>
 
 
-Automata::Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target):
+Automata::Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target)noexcept:
 _no(args.no),
 _inputSize(args.inputSize),
 _clauseNum(args.clauseNum),
@@ -34,7 +34,7 @@ _targets(target)
 /// @brief Forward function, doing vote for learning or predicting.
 /// @param datavec A single vector of input data containing _inputSize number of elements.
 /// @return Result of all clauses' vote.
-int Automata::forward(vector<__m512i> &datavec)
+int Automata::forward(vector<__m512i> &datavec)noexcept
 {
     //std::cout<< "Start forwarding, each sample consume "<< datavec.size()<<std::endl;
     int sum = 0;
@@ -56,7 +56,7 @@ int Automata::forward(vector<__m512i> &datavec)
 
 /// @brief Backward function, containing arrangement of two types of feedback.
 /// @param response Target response of this input vector.
-void Automata::backward(int &response)
+void Automata::backward(int &response)noexcept
 {
     int     clampedSum = std::min(_T, std::max(-_T, response));
     double   rescaleFactor = 1.0f / static_cast<double>(2 * _T);
@@ -103,7 +103,7 @@ bool Automata::modelIntegrityCheck(model &targetModel)
 }
 
 /// @brief Learning process including forward and backward of a single epoch.
-void Automata::learn()
+void Automata::learn()noexcept
 {
     for (int i = 0; i < _sharedInputData.size(); i++)
     {
@@ -116,7 +116,7 @@ void Automata::learn()
 /// @param input Given input 2D vector, shaped in ( sampleNum * _inputSize )
 /// @return Vector of prediction structs, containing result of each example and it's predict confidence.
 vector<Automata::Prediction>
-Automata::predict (vector<vector<__m512i>> &input)
+Automata::predict (vector<vector<__m512i>> &input)noexcept
 {
     vector<Prediction> result(input.size(),Prediction());
     for (int i = 0; i < input.size(); i++)

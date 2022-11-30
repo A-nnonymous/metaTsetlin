@@ -1,7 +1,7 @@
 #include "TsetlinMachine.h"
 #include <thread>
 
-TsetlinMachine::TsetlinMachine( MachineArgs args):
+TsetlinMachine::TsetlinMachine( MachineArgs args)noexcept:
 _inputSize(args.inputSize),
 _outputSize(args.outputSize),
 _clausePerOutput(args.clausePerOutput),
@@ -27,7 +27,7 @@ _myArgs(args)
     }
     
 }
-TsetlinMachine::TsetlinMachine( TsetlinMachine::model &savedModel):
+TsetlinMachine::TsetlinMachine( TsetlinMachine::model &savedModel)noexcept:
 _inputSize(savedModel.modelArgs.inputSize),
 _outputSize(savedModel.modelArgs.outputSize),
 _clausePerOutput(savedModel.modelArgs.clausePerOutput),
@@ -209,6 +209,8 @@ TsetlinMachine::load(vector<vector<int>> &data,
     {
         _sharedData[i] = pack(data[i]);
     }
+    _response.shrink_to_fit();
+    _sharedData.shrink_to_fit();
     //std::cout<<"Loaded "<<data.size()<< " samples, each consumes "<<_sharedData[0].size()<< " blocks"<<std::endl;
 }
 

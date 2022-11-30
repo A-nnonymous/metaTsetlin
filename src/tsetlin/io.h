@@ -69,6 +69,7 @@ vector<T> getFairThreshold(vector<T> &original, int pieces)
     return result;
 }
 
+vector<int> getDiscreteResponse(vector<double> threshold, double raw);
 
 
 template<typename Dtype>
@@ -89,7 +90,6 @@ vector<Dtype> readcsvline(string path)
     return result;
 }
 
-vector<int> getDiscreteResponse(vector<double> threshold, double raw);
 
 bool write_csv_row(vector<float> data, std::ofstream *output);
 bool write_csv(vector<vector<int>> &data, int row, int column, std::string filepath);

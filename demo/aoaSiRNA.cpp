@@ -121,7 +121,7 @@ int main(int argc, char const *argv[])
     arg.optimizerNum= 94;
     arg.evaluateFunc = siRNAdemo;
     arg.gFuncArgs = funcArgs;
-    arg.iterNum= 100;
+    arg.iterNum= 5;
     arg.lowerBounds= vector<int>{100,50};
     arg.upperBounds= vector<int>{500, 5000};
     AOAoptimizer<modelAndArgs, tsetlinArgs, int> env(arg);
@@ -132,6 +132,6 @@ int main(int argc, char const *argv[])
     ttag[0] = "low";
     ttag[1] = "high";
     //outputModelStat(result.model,result.value,ttag,"/home/output/");
-    //outputModelPattern(result.model,result.value,ttag,"/home/output/");
+    outputModelPattern(result.model,result.value,ttag,"/home/output/");
     return 0;
 }

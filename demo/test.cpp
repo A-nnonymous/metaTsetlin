@@ -75,7 +75,7 @@ int main(int argc, char const *argv[])
     ttag[1] = "high";
     //outputModelStat(model,precision,ttag,"/home/output/");
     //outputModelStat(model,precision,ttag,"./"); /////////////deprecated
-    //outputModelPattern(model, precision,ttag,"./"); ///////////deprecated
+    outputModelPattern(model, precision,ttag,"./"); ///////////deprecated
     
     return 0;
 }

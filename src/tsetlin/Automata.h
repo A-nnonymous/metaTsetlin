@@ -48,14 +48,14 @@ private:
     vector<Clause>              _positiveClauses;
     vector<Clause>              _negativeClauses;
 
-    int     forward(vector<__m512i> &datavec);
-    void    backward(int &response);
+    int     forward(vector<__m512i> &datavec)noexcept;
+    void    backward(int &response)noexcept;
     bool    modelIntegrityCheck(model &targetModel);
 public:
-    Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target);
+    Automata(AutomataArgs args, vector<vector<__m512i>> &input, vector<int> &target)noexcept;
 
-    void                learn();
-    vector<Prediction>  predict(vector<vector<__m512i>> &input);
+    void                learn()noexcept;
+    vector<Prediction>  predict(vector<vector<__m512i>> &input)noexcept;
 
     model               exportModel();
     void                importModel(model &targetModel);

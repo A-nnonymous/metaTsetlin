@@ -52,7 +52,7 @@ private:
     vector<int>             unpack(vector<__m512i> &original)noexcept;
     vector<__m512i>         pack(vector<int> &original)noexcept;
 public:
-    Clause(ClauseArgs args);
+    Clause(ClauseArgs args)noexcept;
 
     int                     vote(vector<__m512i> &in)noexcept;
     void                    feedbackTypeI()noexcept;

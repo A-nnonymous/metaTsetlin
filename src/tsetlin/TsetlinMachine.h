@@ -53,8 +53,8 @@ private:
     vector<vector<int>> transpose(vector<vector<int>> &original);
     vector<__m512i>     pack(vector<int> &original);
 public:
-    TsetlinMachine( MachineArgs args);
-    TsetlinMachine( model &savedModel);
+    TsetlinMachine( MachineArgs args)noexcept;
+    TsetlinMachine( model &savedModel)noexcept;
 
     void                load(   vector<vector<int>> &data,
                                 vector<vector<int>> &response);

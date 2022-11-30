@@ -2,7 +2,7 @@
 using std::vector;
 using std::cout, std::endl;
 
-Clause::Clause(ClauseArgs args):
+Clause::Clause(ClauseArgs args)noexcept:
 _no(args.no),
 _literalNum(args.inputSize),
 _s(args.specificity), _sInv(1.0/_s), _sInvConj(1.0-_sInv),
@@ -23,6 +23,16 @@ _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
     _inputMaskBlocks.resize(_blockNum, _zeroMask);
     _inputMaskBlocksInverse.resize(_blockNum, _zeroMask);
 
+    // Compact memory usage.
+    _positiveLiteralBlocks.shrink_to_fit();
+    _posInclusionMaskBlocks.shrink_to_fit();
+    _posExclusionMaskBlocks.shrink_to_fit();
+    _negativeLiteralBlocks.shrink_to_fit();
+    _negInclusionMaskBlocks.shrink_to_fit();
+    _negExclusionMaskBlocks.shrink_to_fit();
+    _inputMaskBlocks.shrink_to_fit();
+    _inputMaskBlocksInverse.shrink_to_fit();
+    
     int remainder = _literalNum%16;         // Deal with boundary problem.
     int lastMaskInt = 0;
     for (int offset = 0; offset < remainder; offset++)
@@ -62,6 +72,7 @@ Clause::pack(vector<int> &original)noexcept
         
         result[i] = _mm512_loadu_epi32(&thisPack);
     }
+    result.shrink_to_fit();
     return result;
 }
 
