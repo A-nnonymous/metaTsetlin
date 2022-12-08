@@ -20,7 +20,6 @@ include_directories(src/metaHeuristic/rsa)
 include_directories(src/metaHeuristic/pso)
 include_directories(src/metaHeuristic/aoa)
 
-#add_executable(parse demo/dataParser.cpp)
 add_executable(test demo/test.cpp)
 add_executable(xor demo/xor.cpp)
 add_executable(rsademo demo/rsaDemo.cpp)

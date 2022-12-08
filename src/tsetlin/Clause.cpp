@@ -8,7 +8,7 @@ _literalNum(args.inputSize),
 _s(args.specificity), _sInv(1.0/_s), _sInvConj(1.0-_sInv),
 _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
 {
-
+    
     pcg_extras::seed_seq_from<std::random_device> seed_source;
     pcg64_fast          _rng(seed_source);
 
@@ -227,6 +227,7 @@ void Clause::feedbackTypeI()noexcept
         }
     }
 }
+
 
 /// @brief Reinforce positive and negative literals according to inclusion, input, previous vote.
 /// @param in Previous input vector.
