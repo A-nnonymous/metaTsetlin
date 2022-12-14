@@ -98,8 +98,7 @@ bool Automata::modelIntegrityCheck(model &targetModel)
 {
     bool isRightLength =    (targetModel.negativeClauses.size() == _clauseNum) &&
                             (targetModel.positiveClauses.size() == _clauseNum);
-    bool isRightPlace = (targetModel.no == _no);
-    return isRightLength && isRightPlace;
+    return isRightLength;
 }
 
 /// @brief Learning process including forward and backward of a single epoch.
@@ -134,10 +133,9 @@ Automata::predict (vector<vector<__m512i>> &input)noexcept
 Automata::model Automata::exportModel()
 {
     model result;
-    result.no = _no;
-    vector<Clause::model> pos, neg;
-    pos.resize(_clauseNum, Clause::model());
-    neg.resize(_clauseNum, Clause::model());
+    vector<vector<int>> pos, neg;
+    pos.resize(_clauseNum);
+    neg.resize(_clauseNum);
     for (int i = 0; i < _clauseNum; i++)
     {
         pos[i] = _positiveClauses[i].exportModel();
@@ -148,6 +146,7 @@ Automata::model Automata::exportModel()
     return result;
 }
 
+/*
 void Automata::importModel(model &targetModel)
 {
     if(!Automata::modelIntegrityCheck(targetModel))
@@ -161,3 +160,4 @@ void Automata::importModel(model &targetModel)
         _negativeClauses[i].importModel(targetModel.negativeClauses[i]);
     }
 }
+*/

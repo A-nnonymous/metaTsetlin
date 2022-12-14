@@ -16,12 +16,6 @@ public:
         int     inputSize;
         double  specificity;
     };
-    struct model
-    {
-        int             no;
-        vector<int>     literals;
-        model(){}
-    };
 
 private:
     const int               _no;
@@ -48,7 +42,7 @@ private:
     
     int                     _vote;
 
-    bool                    modelIntegrityCheck(model &targetModel);
+    //bool                    modelIntegrityCheck(model &targetModel);
     vector<int>             unpack(vector<__m512i> &original)noexcept;
     vector<__m512i>         pack(vector<int> &original)noexcept;
 public:
@@ -58,6 +52,6 @@ public:
     void                    feedbackTypeI()noexcept;
     void                    feedbackTypeII()noexcept;
 
-    model                   exportModel();
-    void                    importModel(model &targetModel);
+    vector<int>             exportModel();
+    //void                    importModel(model &targetModel);
 };

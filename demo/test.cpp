@@ -5,22 +5,26 @@ using std::vector;
 
 int main(int argc, char const *argv[])
 {
-    std::mt19937                    rng(std::random_device{}());
     int                             train_data_size;
     int                             test_data_size;
     int                             output_size;
     int                             clausePerOutput = 500;      // Only represent the number of clauses that have same polarity.
     double                          dropoutRatio = 0.5;
 
+    int classNum = 2;
+    int epochNum = 1;
     double trainRatio = 0.9;
-    int classNum = 2;output_size = classNum;
-    vector<string> seqs = readcsvline<string>("/home/data/siRNA/e2sall/e2sIncSeqs.csv");
-    vector<double> res = readcsvline<double>("/home/data/siRNA/e2sall/e2sIncResponse.csv");
-    dataset data = prepareData(seqs,res,trainRatio,classNum);
+    output_size = classNum;
+    nucTransformer transformer;
+    vector<string> seqs = readcsvline<string>("../data/siRNA/e2sall/e2sIncSeqs.csv");
+    vector<double> res = readcsvline<double>("../data/siRNA/e2sall/e2sIncResponse.csv");
+    dataset data = transformer.parseAndDivide(seqs,res,trainRatio,classNum);
     vector<vector<int>> train_seqs = data.trainData; train_data_size = train_seqs.size();
     vector<vector<int>> train_scores= data.trainResponse;
     vector<vector<int>> test_seqs = data.testData;  test_data_size = test_seqs.size();
     vector<vector<int>> test_scores= data.testResponse;
+    vector<double> responseThreshold = data.responseThreshold;
+    vector<string> tierTags = threshold2Tags(responseThreshold,true);
     /*
     vector<vector<int>>   train_seqs(train_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
@@ -40,10 +44,10 @@ int main(int argc, char const *argv[])
     mArgs.sLow = 2.0f;
     mArgs.sHigh = 100.0f;
     mArgs.T = 500;
-    TsetlinMachine tm(mArgs);
+    TsetlinMachine tm(mArgs,tierTags);
     
     tm.load(train_seqs,train_scores);
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < epochNum; i++)
     {
         auto start = std::chrono::high_resolution_clock::now();
         tm.train(1);
@@ -70,12 +74,6 @@ int main(int argc, char const *argv[])
     auto precision = totalCorrect/(double) test_scores.size();
     std::cout<< "Precision:"<< precision<<std::endl;
     auto model = tm.exportModel();
-    vector<string> ttag(4);
-    ttag[0] = "low";
-    ttag[1] = "high";
-    //outputModelStat(model,precision,ttag,"/home/output/");
-    //outputModelStat(model,precision,ttag,"./"); /////////////deprecated
-    outputModelPattern(model, precision,ttag,"./"); ///////////deprecated
-    
+    transformer.deparseAndOutput(model,precision,"./");
     return 0;
 }

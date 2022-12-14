@@ -1,6 +1,7 @@
 #pragma once
 #include "Automata.h"
 using std::vector;
+using std::string;
 
 // TODO: Add boost::serialization to export full model
 class TsetlinMachine{
@@ -28,6 +29,7 @@ public:
     struct model
     {
         MachineArgs             modelArgs;
+        vector<string>          tierTags;
         vector<Automata::model> automatas;
         model(){}
     };
@@ -41,6 +43,7 @@ private:
     const double                _sLow, _sHigh;
     const double                _dropoutRatio;
     const MachineArgs           _myArgs;
+    const vector<string>        _tierTags;
 
     vector<Automata>            _automatas;
     vector<vector<__m512i>>     _sharedData;
@@ -53,8 +56,8 @@ private:
     vector<vector<int>> transpose(vector<vector<int>> &original);
     vector<__m512i>     pack(vector<int> &original);
 public:
-    TsetlinMachine( MachineArgs args)noexcept;
-    TsetlinMachine( model &savedModel)noexcept;
+    TsetlinMachine( MachineArgs args, vector<string> tierTags)noexcept;
+    //TsetlinMachine( model &savedModel)noexcept;
 
     void                load(   vector<vector<int>> &data,
                                 vector<vector<int>> &response);
@@ -62,6 +65,6 @@ public:
     
     vector<vector<int>> loadAndPredict(vector<vector<int>> &data);
 
-    void                importModel(model &targetModel);
+    //void                importModel(model &targetModel);
     model               exportModel();
 };

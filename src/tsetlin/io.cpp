@@ -21,7 +21,23 @@ vector<int> getDiscreteResponse(vector<double> threshold, double raw)
     result[result.size()-1] = 1; // larger than final cut.
     return result;
 }
+vector<string> threshold2Tags(vector<double> thresholds, bool isAscent)
+{
+    auto spanNum = thresholds.size() + 1;
+    vector<string> tags(spanNum);
+    tags[0] = (isAscent? "<":">") + std::to_string(thresholds[0]);
+    string prevThreshold = std::to_string(thresholds[0]);
 
+    for (int i = 1; i < spanNum - 1; i++)
+    {
+        string thisThreshold = std::to_string(thresholds[i]);
+        string thisTag = prevThreshold + " ~ " + thisThreshold;
+        tags[i] = thisTag;
+        prevThreshold = thisThreshold;
+    }
+    tags[spanNum - 1] = (isAscent? ">":"<") + std::to_string(thresholds[spanNum - 2]);
+    return tags;
+}
 
 /// @brief Save Tsetlin machine model in binary format.
 /// @param machine Target model.

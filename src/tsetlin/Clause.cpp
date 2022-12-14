@@ -103,6 +103,7 @@ Clause::unpack(vector<__m512i> &original)noexcept
     return result;
 }
 
+/*
 /// @brief Check model integrity before importing
 /// @param targetModel Model that user intend to import
 /// @return Boolean value of the integrity
@@ -112,6 +113,7 @@ bool Clause::modelIntegrityCheck(model &targetModel)
     bool isRightPlace = (targetModel.no == _no);
     return isRightLength && isRightPlace;
 }
+*/
 
 /// @brief Vote function used for both train and predict procedure.
 /// @param in Data vector that in the shape of ( 1, _literalNum )
@@ -248,10 +250,8 @@ void Clause::feedbackTypeII()noexcept
     }
 }
 
-Clause::model Clause::exportModel()
+vector<int> Clause::exportModel()
 {
-    model result;
-    result.no = _no;
     vector<int> posLitFilled = unpack(_positiveLiteralBlocks);
     vector<int> negLitFilled = unpack(_negativeLiteralBlocks);
     vector<int> literals(_literalNum * 2, 0);
@@ -260,10 +260,10 @@ Clause::model Clause::exportModel()
         literals[i] = posLitFilled[i];
         literals[i+_literalNum] = negLitFilled[i];
     }
-    result.literals = literals;
-    return result;
+    return literals;
 }
 
+/*
 void Clause::importModel(model &targetModel)
 {
     if(!Clause::modelIntegrityCheck(targetModel))[[unlikely]]
@@ -282,3 +282,4 @@ void Clause::importModel(model &targetModel)
     _positiveLiteralBlocks = pack(pos);
     _negativeLiteralBlocks = pack(neg);
 }
+*/

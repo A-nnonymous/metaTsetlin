@@ -25,9 +25,8 @@ public:
     };
     struct model
     {
-        int                     no;
-        vector<Clause::model>   positiveClauses;
-        vector<Clause::model>   negativeClauses;
+        vector<vector<int>>   positiveClauses;// Arranged in size of ClauseNum * (literalNum * 2)
+        vector<vector<int>>   negativeClauses;
         model(){}
     };
     
@@ -58,5 +57,5 @@ public:
     vector<Prediction>  predict(vector<vector<__m512i>> &input)noexcept;
 
     model               exportModel();
-    void                importModel(model &targetModel);
+    //void                importModel(model &targetModel);
 };

@@ -37,7 +37,7 @@ struct dataset
 
 
 template<typename T>
-vector<T> getFairThreshold(vector<T> &original, int pieces)
+vector<T> getFairThreshold(const vector<T> &original, const int pieces)
 {
     vector<T> result(pieces-1,0);
     vector<T> cutReady;
@@ -100,7 +100,7 @@ bool write_csv( vector<vector<double>> &data,
 
 // TODO: Output model in binary and load in binary, also implement a transform function to csv.
 //       output all clause 
-
+vector<string> threshold2Tags(vector<double> thresholds, bool isAscent);
 // Model IO(deprecated)
 void saveModel( TsetlinMachine::model   &mahchine,
                 string                  outputPath);

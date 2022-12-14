@@ -1,14 +1,15 @@
 #include "TsetlinMachine.h"
 #include <thread>
 
-TsetlinMachine::TsetlinMachine( MachineArgs args)noexcept:
+TsetlinMachine::TsetlinMachine( MachineArgs args, vector<string> tierTags)noexcept:
 _inputSize(args.inputSize),
 _outputSize(args.outputSize),
 _clausePerOutput(args.clausePerOutput),
 _T(args.T),
 _sLow(args.sLow), _sHigh(args.sHigh),
 _dropoutRatio(args.dropoutRatio),
-_myArgs(args)
+_myArgs(args),
+_tierTags(tierTags)
 {
     Automata::AutomataArgs aArgs;
     aArgs.clauseNum = _clausePerOutput;
@@ -25,34 +26,8 @@ _myArgs(args)
         Automata thisAutomata(aArgs,_sharedData,_response[i]);
         _automatas.push_back(thisAutomata);
     }
-    
 }
-TsetlinMachine::TsetlinMachine( TsetlinMachine::model &savedModel)noexcept:
-_inputSize(savedModel.modelArgs.inputSize),
-_outputSize(savedModel.modelArgs.outputSize),
-_clausePerOutput(savedModel.modelArgs.clausePerOutput),
-_T(savedModel.modelArgs.T),
-_sLow(savedModel.modelArgs.sLow), _sHigh(savedModel.modelArgs.sHigh),
-_dropoutRatio(savedModel.modelArgs.dropoutRatio),
-_myArgs(savedModel.modelArgs)
-{
-    Automata::AutomataArgs aArgs;
-    aArgs.clauseNum = _clausePerOutput;
-    aArgs.dropoutRatio = _dropoutRatio;
-    aArgs.inputSize = _inputSize;
-    aArgs.sLow = _sLow;
-    aArgs.sHigh = _sHigh;
-    aArgs.T = _T;
-    _response.resize(_outputSize, vector<int>(1,0));    // Set dummy zero response as placeholder.
-    for (int i = 0; i < _outputSize; i++)
-    {
-        aArgs.no = i;
-        Automata thisAutomata(aArgs,_sharedData,_response[i]);
-        _automatas.push_back(thisAutomata);
-    }
-    importModel(savedModel);
-    
-}
+
 
 /// @brief Check model integrity before importing
 /// @param targetModel Model that user intend to import
@@ -155,6 +130,7 @@ TsetlinMachine::pack(vector<int> &original)
     return result;
 }
 
+/*
 /// @brief Import model from user.
 /// @param targetModel Target model in class of TsetlinMachine::model.
 void
@@ -170,6 +146,7 @@ TsetlinMachine::importModel(model &targetModel)
         _automatas[i].importModel(targetModel.automatas[i]);
     }
 }
+*/
 
 
 /// @brief Export current model.
@@ -179,10 +156,10 @@ TsetlinMachine::exportModel()
 {
     TsetlinMachine::model result;
     result.modelArgs = _myArgs;
-    result.automatas.resize(_outputSize,Automata::model());
+    result.tierTags = _tierTags;
+    result.automatas.resize(_outputSize, Automata::model());
     for (int i = 0; i < _outputSize; i++)
     {
-
         result.automatas[i] = _automatas[i].exportModel();
     }
     return result;
