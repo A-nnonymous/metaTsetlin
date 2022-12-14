@@ -12,7 +12,7 @@ int main(int argc, char const *argv[])
     double                          dropoutRatio = 0.5;
 
     int classNum = 2;
-    int epochNum = 1;
+    int epochNum = 10;
     double trainRatio = 0.9;
     output_size = classNum;
     nucTransformer transformer;
@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
     vector<vector<int>> test_seqs = data.testData;  test_data_size = test_seqs.size();
     vector<vector<int>> test_scores= data.testResponse;
     vector<double> responseThreshold = data.responseThreshold;
-    vector<string> tierTags = threshold2Tags(responseThreshold,true);
+    vector<string> tierTags = data.tierTags;
     /*
     vector<vector<int>>   train_seqs(train_data_size, vector<int>(input_size, 0));
     vector<vector<int>>   train_scores(train_data_size, vector(output_size, 0));
@@ -74,6 +74,7 @@ int main(int argc, char const *argv[])
     auto precision = totalCorrect/(double) test_scores.size();
     std::cout<< "Precision:"<< precision<<std::endl;
     auto model = tm.exportModel();
-    transformer.deparseAndOutput(model,precision,"./");
+    vector<string> headers{"NUC","NUCvoice","GC","GCvoice"};
+    transformer.deparseAndOutput(model,precision,headers,"./");
     return 0;
 }

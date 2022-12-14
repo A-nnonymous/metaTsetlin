@@ -71,7 +71,8 @@ modelAndArgs siRNAdemo(tsetlinArgs funcArgs)
     mArgs.outputSize = funcArgs.outputSize;
     mArgs.sLow = funcArgs.sLow;
     mArgs.sHigh = funcArgs.sHigh;
-    TsetlinMachine tm(mArgs);
+    
+    TsetlinMachine tm(mArgs,funcArgs.data.tierTags);
     tm.load(train_seqs,train_scores);
     for (int i = 0; i < funcArgs.epochNum; i++)
     {
@@ -106,13 +107,14 @@ int main(int argc, char const *argv[])
 {
     double trainRatio = 0.9;
     int classNum = 2;
+    nucTransformer transformer;
     vector<string> seqs = readcsvline<string>("../data/siRNA/e2sall/e2sIncSeqs.csv");
     vector<double> res = readcsvline<double>("../data/siRNA/e2sall/e2sIncResponse.csv");
-    dataset data = prepareData(seqs,res,trainRatio,classNum);
+    dataset data = transformer.parseAndDivide(seqs,res,trainRatio,classNum);
     // Tsetlin Machine common arguments.
     int             inputSize= data.trainData[0].size();
     int             outputSize= 2;
-    int             epochNum = 60;
+    int             epochNum = 50;
     double          dropoutRatio = 0.5;
     tsetlinArgs     funcArgs(dropoutRatio,inputSize,outputSize,epochNum,2.0f,200.0f,data);
 
@@ -121,17 +123,12 @@ int main(int argc, char const *argv[])
     arg.optimizerNum= 94;
     arg.evaluateFunc = siRNAdemo;
     arg.gFuncArgs = funcArgs;
-    arg.iterNum= 5;
+    arg.iterNum= 2;
     arg.lowerBounds= vector<int>{100,50};
     arg.upperBounds= vector<int>{500, 5000};
     AOAoptimizer<modelAndArgs, tsetlinArgs, int> env(arg);
     modelAndArgs result = env.optimize();
     std::cout<<result.value<<std::endl;
-    //modelOutput(result.model,result.value,"/home/output/");    // Last argument is up to you.
-    vector<string> ttag(2);
-    ttag[0] = "low";
-    ttag[1] = "high";
-    //outputModelStat(result.model,result.value,ttag,"/home/output/");
-    outputModelPattern(result.model,result.value,ttag,"/home/output/");
+    transformer.deparseAndOutput(result.model,result.value,{""},"./");
     return 0;
 }

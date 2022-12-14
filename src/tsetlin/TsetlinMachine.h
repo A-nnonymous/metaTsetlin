@@ -8,12 +8,13 @@ class TsetlinMachine{
 public:
     struct MachineArgs
     {
-        int     inputSize;
-        int     outputSize;
-        int     clausePerOutput;
-        int     T;
-        double  sLow, sHigh;
-        double  dropoutRatio;
+        int             inputSize;
+        int             outputSize;
+        int             clausePerOutput;
+        int             T;
+        double          sLow, sHigh;
+        double          dropoutRatio;
+        vector<string>  tierTags;
 
         bool operator==(MachineArgs a)const
         {

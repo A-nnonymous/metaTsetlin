@@ -22,10 +22,11 @@ using std::string;
 struct dataset
 {
     //////////METADATA///////////////
-    int             trainSize;
-    int             testSize;
-    int             responseSize;
-    vector<double>     responseThreshold;
+    int                     trainSize;
+    int                     testSize;
+    int                     responseSize;
+    vector<double>          responseThreshold;
+    vector<string>          tierTags;
     //////////METADATA///////////////
 
     vector<vector<int>>     trainData;
