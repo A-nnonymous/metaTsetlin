@@ -34,7 +34,7 @@ struct point
     }
 };
 
-utility concave(point p)
+utility concave(point &p)
 {
     double num = p.vars[0]*p.vars[0] + p.vars[1]*p.vars[1];
     //double num =0;

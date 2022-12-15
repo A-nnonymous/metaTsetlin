@@ -48,7 +48,7 @@ private:
     pcg64_fast                          _rng;
     const int                           _mynumber;
     output                              _property;
-    output                              (*_funcPtr)(funcArgs);
+    output                              (*_funcPtr)(funcArgs&);
     searchArgs                          _pSearchArgs;
     funcArgs                            _pFuncArgs;
     std::vector<
@@ -72,7 +72,7 @@ public:
     /// @param gFuncArgs Fitness function related arguments passed from hibitat.
     /// @param allPosition Reference of position matrix.
     /// @param mynumber Unique tag of this optimizer.
-    Predator(   output                                  (*fitnessFunc)(funcArgs),
+    Predator(   output                                  (*fitnessFunc)(funcArgs&),
                 searchArgs                              gSearchArgs,
                 funcArgs                                gFuncArgs,
                 std::vector<std::vector<rangeDtype>>     &allPosition,

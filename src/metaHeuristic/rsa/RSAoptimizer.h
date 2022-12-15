@@ -35,7 +35,7 @@ private:
     vector<vector<rangeDtype>>          _allPosition;
     vector<rangeDtype>                  _gbPosition;
     output                              _gbProperty;                // output all data returned from best predator.
-    output                              (*_funcPtr)(funcArgs);      // Fitness function pointer
+    output                              (*_funcPtr)(funcArgs&);      // Fitness function pointer
     int                                 _iterCounter;
 
 
@@ -105,7 +105,7 @@ public:
     /// @param gFuncArgs Fitness function related arguments passed from user, must include vector named 'vars' stand for changable parameters.
     /// @param gSearchArgs Optimizer related arguments passed from user.
     RSAoptimizer(int                                                             predatorNum,
-            output                                                          (*fitnessFunc)(funcArgs),
+            output                                                          (*fitnessFunc)(funcArgs&),
             funcArgs                                                        gFuncArgs,
             typename Predator<output,funcArgs,rangeDtype>::searchArgs       gSearchArgs)
     :
@@ -147,6 +147,7 @@ public:
     /// @brief  Main optimize function of RSA algorithm
     output optimize()
     {
+        std::cout<< "############## RSA optimizer started #################"<<std::endl;
         for(_iterCounter=1; _iterCounter<=_gSearchArgs.maxIter; _iterCounter++)
         {
             auto start = std::chrono::high_resolution_clock::now();
@@ -162,12 +163,13 @@ public:
 
         }
         auto result = _gbProperty;
-        std::cout<<"\n\nOptimization completed "<< ", best value is optimized to:" <<result.value<<std::endl;
+        std::cout<<"\nOptimization completed "<< ", best value is optimized to:" <<result.value<<std::endl;
         std::cout<<"Best args as below:" << std::endl;
         for (int i = 0; i < _gSearchArgs.dimension; i++)
         {
             std::cout<<"\tArgs["<< i<<"] = "<< _gbPosition[i]<<std::endl;
         }
+        std::cout<<std::endl;
 
         return result;
     }

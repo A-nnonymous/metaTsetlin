@@ -12,7 +12,7 @@ public:
         int                     optimizerNum;
         int                     dimensionNum;
         int                     iterNum;
-        output                  (*evaluateFunc)(funcArgs);
+        output                  (*evaluateFunc)(funcArgs&);
         funcArgs                gFuncArgs;
         vector<rangeDtype>      lowerBounds;
         vector<rangeDtype>      upperBounds;
@@ -21,11 +21,11 @@ public:
 
 private:
     static inline const double      Alpha = 0.5;
-    const int               _optimizerNum;
-    const int               _iterNum;
+    const int                       _optimizerNum;
+    const int                       _iterNum;
 
-    double                  _w;
-    double                  _MOP;
+    double                          _w;
+    double                          _MOP;
 
     vector<
         Optimizer
@@ -34,13 +34,13 @@ private:
             funcArgs, 
             rangeDtype 
             > 
-        >                   _optimizers;
+        >                           _optimizers;
         
-    double                  _gbestValue;
-    vector<rangeDtype>      _gbestPosition;
-    double                  _gworstValue;
-    vector<rangeDtype>      _gworstPosition;
-    output                  _gbestProperty;
+    double                          _gbestValue;
+    vector<rangeDtype>              _gbestPosition;
+    double                          _gworstValue;
+    vector<rangeDtype>              _gworstPosition;
+    output                          _gbestProperty;
 
     void exploitation()
     {
@@ -96,7 +96,6 @@ private:
         
     }
 
-
 public:
     AOAoptimizer(args thisArg):
     _optimizerNum(thisArg.optimizerNum),
@@ -126,8 +125,10 @@ public:
             _optimizers.push_back(o);
         }
     }
+
     output optimize()
     {
+        std::cout<< "\n############## AOA optimizer started #################"<<std::endl;
         output result = output();
         for (int i = 1; i <= _iterNum; i++)
         {
@@ -148,6 +149,13 @@ public:
         }
         result = _gbestProperty;
 
+        std::cout<<"\nOptimization completed "<< ", best value is optimized to:" <<result.value<<std::endl;
+        std::cout<<"Best args as below:" << std::endl;
+        for (int i = 0; i < _gbestPosition.size(); i++)
+        {
+            std::cout<<"\tArgs["<< i<<"] = "<< _gbestPosition[i] <<std::endl;
+        }
+        std::cout<<std::endl;
         return result;
     }
 };

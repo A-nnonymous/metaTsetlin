@@ -8,9 +8,9 @@ using std::thread;
 template<typename output, typename funcArgs, typename rangeDtype>
 class PSOoptimizer{
 public:
-    struct hArgs
+    struct args
     {
-        output                  (*evaluateFunc)(funcArgs);
+        output                  (*evaluateFunc)(funcArgs&);
         funcArgs                gFuncArgs;
         int                     particleNum;
         int                     dimension;
@@ -23,7 +23,7 @@ public:
     };
 
 private:
-    const hArgs                 _args;
+    const args                 _args;
     vector<rangeDtype>          _gBestPosition;
     output                      _gBestProperty;
     vector<Particle
@@ -34,7 +34,7 @@ private:
             >>                   _particles;
 
 public:
-    PSOoptimizer(hArgs args)
+    PSOoptimizer(args args)
     :
     _args(args)
     {
@@ -60,8 +60,9 @@ public:
             _particles.push_back(Particle<output,funcArgs,rangeDtype>(i,pArgs,_gBestPosition,_gBestProperty));
         }
     }
-    output run()
+    output optimize()
     {
+        std::cout<< "\n############## PSO optimizer started #################"<<std::endl;
         vector<thread> threadPool;
         for (int i = 0; i < _args.particleNum; i++)
         {
@@ -72,10 +73,12 @@ public:
         {
             threadPool[i].join();
         }
-        std::cout<<"best argument set is :";
+
+        std::cout<<"\nOptimization completed "<< ", best value is optimized to:" <<_gBestProperty.value<<std::endl;
+        std::cout<<"Best args as below:" << std::endl;
         for (int i = 0; i < _args.dimension; i++)
         {
-            std::cout<<_gBestPosition[i]<< "\t";
+            std::cout<<"\tArgs["<< i<<"] = "<< _gBestPosition[i] <<std::endl;
         }
         std::cout<<std::endl;
         auto result = _gBestProperty;

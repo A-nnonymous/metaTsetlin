@@ -34,7 +34,7 @@ public:
         double                  omega;
         double                  ego;
         double                  dt;
-        output                  (*evaluateFunc)(funcArgs);
+        output                  (*evaluateFunc)(funcArgs&);
         funcArgs                gFuncArgs;
         particleLimits          limits;
         searchArgs(){}
@@ -62,7 +62,7 @@ private:
     output                              _pBestProperty;
     searchArgs                          _pSearchArgs;
     funcArgs                            _pFuncArgs;
-    output                              (*_evaluateFunc)(funcArgs);
+    output                              (*_evaluateFunc)(funcArgs&);
     output                              _property;
 
     vector<rangeDtype>                  _velocity;
@@ -108,8 +108,6 @@ private:
             _gBestPosition = _position;
             _gBestProperty = _property;
             _gBestLock.unlock();
-            std::cout<< std::this_thread::get_id()<< " with arg1= "<<_position[0]<<" , arg2= "<< _position[1]
-            << " has update the global-optima to: "<< _property.value<<"\n";
         }
         else
         {

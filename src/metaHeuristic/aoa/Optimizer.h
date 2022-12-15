@@ -50,7 +50,7 @@ public:
     {
         int         dimensionNum;
         limit       lim;
-        output      (*evaluateFunc)(funcArgs);
+        output      (*evaluateFunc)(funcArgs&);
         funcArgs    gFuncArgs;
     };
     
@@ -72,7 +72,7 @@ private:
     vector<rangeDtype>              _myPosition;
     funcArgs                        _myFuncArgs;
     output                          _myProperty;
-    output                          (*_evaluateFunc)(funcArgs);
+    output                          (*_evaluateFunc)(funcArgs&);
 
     void rangeRestrict(vector<rangeDtype> &original)
     {
