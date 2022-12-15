@@ -37,7 +37,6 @@ struct point
 utility concave(point &p)
 {
     double num = p.vars[0]*p.vars[0] + p.vars[1]*p.vars[1];
-    //double num =0;
     auto result = utility(num);
     result.x = p.vars[0];
     result.y = p.vars[1];
@@ -48,8 +47,8 @@ utility concave(point &p)
 int main(int argc, char const *argv[])
 {
 
-    std::vector<double> min{-10,-10};
-    std::vector<double> max{10,10};
+    std::vector<double> min{-100,-100};
+    std::vector<double> max{100,100};
     auto limits = Predator<utility,point,double>::rangeLimits(min,max);
     auto search = Predator<utility,point,double>::searchArgs(2,200,0.1,0.005,limits);
     auto test = RSAoptimizer<utility,point,double>(50,concave,point(), search);
