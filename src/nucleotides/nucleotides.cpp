@@ -20,7 +20,7 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 //  DEALINGS IN THE SOFTWARE.
-v
+
 #include "nucleotides.h"
 using std::string_view;
 
@@ -244,7 +244,9 @@ vector<string> Deparser::deparseNucSig2Seq(const vector<vector<int>> &rawSignals
                 isValidClause = false;
                 break;
             }
-            thisSamplePattern += (pForce > nForce)? chP : chN;
+            // Assuming all original positive pattern occurs in equal prossibility.
+            // Judge whether positive or negative pattern according to information theory.
+            thisSamplePattern += (log2(4) * pForce > log2(4/(double)3) * nForce)? chP : chN;
             validLiteral++;
         }
         double value = (validLiteral / (double)(posPartLen / (double)2) * voice); // valid literal ratio multiply to voice.
@@ -312,7 +314,7 @@ vector<string> Deparser::deparseGCSig2Seq(const vector<vector<int>> &rawSignals,
                 isValidClause = false;
                 break;
             }
-            thisSamplePattern += (pForce > nForce)? chP : chN;
+            thisSamplePattern += (log2(4) * pForce > log2(4/(double)3) * nForce)? chP : chN;
             validLiteral++;
         }
         double value = (validLiteral / (double)(posPartLen / (double)2) * voice); // valid literal ratio multiply to voice.
