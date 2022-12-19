@@ -58,7 +58,6 @@ public:
         model(){}
     };
     
-
 private:
     const int                   _inputSize;
     const int                   _outputSize;
@@ -70,7 +69,9 @@ private:
     const vector<string>        _tierTags;
 
     vector<Automata>            _automatas;
+    
     vector<vector<__m512i>>     _sharedData;
+    
     vector<vector<int>>         _response;      // Each row is a reflection of multi-dimensional dataset.
 
     bool    modelIntegrityCheck(model &targetModel);
@@ -78,7 +79,10 @@ private:
     bool    responseIntegrityCheck(const vector<vector<int>> &response);
 
     vector<vector<int>> transpose(vector<vector<int>> &original);
+    
+    
     vector<__m512i>     pack(vector<int> &original);
+
 public:
     TsetlinMachine( MachineArgs args, vector<string> tierTags)noexcept;
     //TsetlinMachine( model &savedModel)noexcept;

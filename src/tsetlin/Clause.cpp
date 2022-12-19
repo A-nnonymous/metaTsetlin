@@ -42,7 +42,6 @@ _blockNum(args.inputSize/16 + (args.inputSize%16==0? 0:1))
     _negativeLiteralBlocks.resize(_blockNum, _zeros);
     _negInclusionMaskBlocks.resize(_blockNum, _zeroMask);
     _negExclusionMaskBlocks.resize(_blockNum, _zeroMask);
-
     _inputMaskBlocks.resize(_blockNum, _zeroMask);
     _inputMaskBlocksInverse.resize(_blockNum, _zeroMask);
 

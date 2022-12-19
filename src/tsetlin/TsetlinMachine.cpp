@@ -125,6 +125,7 @@ TsetlinMachine::transpose(vector<vector<int>> &original)
 /// @brief Pack and 'align' the original vector of int to 512Byte pack with zero-padding if size not equal to 16-mer.
 /// @param original Original vector of 32bit integer.
 /// @return Vector of packed and zero-padded __m512i pack vector.
+__attribute__((target("avx512f")))
 vector<__m512i>
 TsetlinMachine::pack(vector<int> &original)
 {

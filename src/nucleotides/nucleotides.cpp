@@ -244,9 +244,8 @@ vector<string> Deparser::deparseNucSig2Seq(const vector<vector<int>> &rawSignals
                 isValidClause = false;
                 break;
             }
-            // Assuming all original positive pattern occurs in equal prossibility.
-            // Judge whether positive or negative pattern according to information theory.
-            thisSamplePattern += (log2(4) * pForce > log2(4/(double)3) * nForce)? chP : chN;
+            // Assuming all original positive pattern occurs in equal possibility.
+            thisSamplePattern += (3 * pForce >= nForce)? chP : chN;
             validLiteral++;
         }
         double value = (validLiteral / (double)(posPartLen / (double)2) * voice); // valid literal ratio multiply to voice.
@@ -314,7 +313,7 @@ vector<string> Deparser::deparseGCSig2Seq(const vector<vector<int>> &rawSignals,
                 isValidClause = false;
                 break;
             }
-            thisSamplePattern += (log2(4) * pForce > log2(4/(double)3) * nForce)? chP : chN;
+            thisSamplePattern += (3 * pForce >= nForce)? chP : chN;
             validLiteral++;
         }
         double value = (validLiteral / (double)(posPartLen / (double)2) * voice); // valid literal ratio multiply to voice.
