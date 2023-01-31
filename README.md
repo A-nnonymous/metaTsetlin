@@ -9,3 +9,5 @@ The Tsetlin Machine itself is now featured with dropout clauses and multigranula
 
 Later on I will start to adding multithreading and job manager to Tsetlin Machine's learning&predicting process, and seek to improve the accuracy through ensemble learning.
 
+Contact me in email to communicate or cooperate: panzhaowu21s@ict.ac.cn
+
